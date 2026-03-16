@@ -1,0 +1,5 @@
+{
+  "name": "SalesPro Dashboard",
+  "description": "A professional sales performance dashboard with real-time tracking, AI-powered image analysis, and automated goal monitoring.",
+  "requestFramePermissions": ["camera", "microphone"]
+}

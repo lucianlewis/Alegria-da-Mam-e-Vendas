@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Application user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "role": { "type": "string", "enum": ["admin", "seller"] }
+      },
+      "required": ["uid", "email"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "A sales entry",
+      "type": "object",
+      "properties": {
+        "sellerId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["cash", "credit", "debit", "pix"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "breakdown": {
+          "type": "object",
+          "properties": {
+            "coins": { "type": "object" },
+            "bills": { "type": "object" }
+          }
+        }
+      },
+      "required": ["sellerId", "amount", "paymentMethod", "timestamp"]
+    },
+    "Goal": {
+      "title": "Goal",
+      "description": "Sales goal tracking",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "target": { "type": "number" },
+        "current": { "type": "number" },
+        "status": { "type": "string", "enum": ["on-track", "behind", "completed"] }
+      },
+      "required": ["title", "target", "current"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": { "schema": "User", "description": "User profiles" },
+    "/sales/{saleId}": { "schema": "Sale", "description": "Sales records" },
+    "/goals/{goalId}": { "schema": "Goal", "description": "Sales goals" }
+  }
+}

@@ -1,0 +1,111 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {uid}
+// Fields:
+//   - uid: string (required) - Firebase Auth UID
+//   - email: string (required) - User email
+//   - displayName: string (optional)
+//   - photoURL: string (optional)
+//   - role: string (required, enum: ['admin', 'seller'])
+//
+// Collection: sales
+// Document ID: auto-generated
+// Fields:
+//   - sellerId: string (required) - UID of the seller
+//   - sellerName: string (required)
+//   - amount: number (required, positive)
+//   - paymentMethod: string (required, enum: ['cash', 'credit', 'debit', 'pix'])
+//   - timestamp: timestamp (required)
+//   - breakdown: map (optional)
+//
+// Collection: goals
+// Document ID: auto-generated
+// Fields:
+//   - title: string (required)
+//   - target: number (required, positive)
+//   - current: number (required)
+//   - status: string (required, enum: ['on-track', 'behind', 'completed'])
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "mahteusmachado@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.role in ['admin', 'seller'];
+    }
+
+    function isValidSale(data) {
+      return data.keys().hasAll(['sellerId', 'amount', 'paymentMethod', 'timestamp']) &&
+             data.sellerId is string &&
+             data.amount is number && data.amount >= 0 &&
+             data.paymentMethod in ['cash', 'credit', 'debit', 'pix'] &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidGoal(data) {
+      return data.keys().hasAll(['title', 'target', 'current', 'status']) &&
+             data.title is string && data.title.size() > 0 &&
+             data.target is number && data.target > 0 &&
+             data.current is number &&
+             data.status in ['on-track', 'behind', 'completed'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (request.resource.data.role == 'seller' || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /sales/{saleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidSale(request.resource.data) && 
+                    request.resource.data.sellerId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /goals/{goalId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() && isValidGoal(request.resource.data);
+    }
+
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
