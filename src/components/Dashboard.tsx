@@ -13,7 +13,7 @@ interface DashboardProps {
 type TimePeriod = 'day' | 'week' | 'month' | 'custom';
 
 export const Dashboard: React.FC<DashboardProps> = ({ sales, goals }) => {
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   const [activePeriod, setActivePeriod] = useState<TimePeriod>('day');
   const [showCustomPicker, setShowCustomPicker] = useState(false);
   
@@ -27,20 +27,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals }) => {
     switch (activePeriod) {
       case 'week':
         return [
-          { name: 'Mon', value: 2100 },
-          { name: 'Tue', value: 1800 },
-          { name: 'Wed', value: 2400 },
-          { name: 'Thu', value: 2000 },
-          { name: 'Fri', value: 2800 },
-          { name: 'Sat', value: 3200 },
-          { name: 'Sun', value: 2900 },
+          { name: t('mon'), value: 2100 },
+          { name: t('tue'), value: 1800 },
+          { name: t('wed'), value: 2400 },
+          { name: t('thu'), value: 2000 },
+          { name: t('fri'), value: 2800 },
+          { name: t('sat'), value: 3200 },
+          { name: t('sun'), value: 2900 },
         ];
       case 'month':
         return [
-          { name: 'W1', value: 8500 },
-          { name: 'W2', value: 9200 },
-          { name: 'W3', value: 7800 },
-          { name: 'W4', value: 10500 },
+          { name: t('w1'), value: 8500 },
+          { name: t('w2'), value: 9200 },
+          { name: t('w3'), value: 7800 },
+          { name: t('w4'), value: 10500 },
         ];
       default: // day
         return [
@@ -130,7 +130,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals }) => {
       <div className="flex gap-4">
         <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('currentSales')}</p>
-          <p className="text-2xl font-black">${totalSales.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+          <p className="text-2xl font-black">{formatCurrency(totalSales)}</p>
           <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
             <TrendingUp size={14} />
             <span>+{growth}%</span>
@@ -138,7 +138,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals }) => {
         </div>
         <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('remaining')}</p>
-          <p className="text-2xl font-black">${remaining.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+          <p className="text-2xl font-black">{formatCurrency(remaining)}</p>
           <div className="flex items-center gap-1 text-rose-400 text-xs font-bold">
             <TrendingDown size={14} />
             <span>-5.2%</span>
@@ -201,7 +201,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals }) => {
                style={{ background: 'conic-gradient(#ff0080 0% 45%, #ce8dad 45% 75%, #4b2036 75% 100%)' }}>
             <div className="size-32 rounded-full bg-card-dark flex flex-col items-center justify-center">
               <span className="text-slate-500 text-[10px] font-bold uppercase">{t('total')}</span>
-              <span className="text-2xl font-black">${(totalSales / 1000).toFixed(1)}k</span>
+              <span className="text-2xl font-black">{formatCurrency(totalSales)}</span>
             </div>
           </div>
 
@@ -236,7 +236,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals }) => {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold">{goal.title}</p>
-              <p className="text-slate-500 text-[10px]">{Math.round((goal.current / goal.target) * 100)}% {t('ofTargetReached')} (${goal.target.toLocaleString()})</p>
+              <p className="text-slate-500 text-[10px]">{Math.round((goal.current / goal.target) * 100)}% {t('ofTargetReached')} ({formatCurrency(goal.target)})</p>
             </div>
             <div className="text-right">
               <span className="text-emerald-400 text-[10px] font-bold px-2 py-1 bg-emerald-400/10 rounded-full uppercase">{t(goal.status === 'on-track' ? 'onTrack' : goal.status === 'behind' ? 'behind' : 'completed')}</span>

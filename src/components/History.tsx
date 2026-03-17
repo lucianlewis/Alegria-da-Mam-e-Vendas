@@ -3,14 +3,30 @@ import { motion } from 'motion/react';
 import { Share2, Download, Printer, ChevronDown } from 'lucide-react';
 import { Sale } from '../types';
 import { format } from 'date-fns';
+import { enUS, ptBR, fr, es, de, hi, ru, ja, zhCN, ko, th } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
+
+const locales: Record<string, any> = {
+  'en': enUS,
+  'pt-BR': ptBR,
+  'fr': fr,
+  'es': es,
+  'de': de,
+  'hi': hi,
+  'ru': ru,
+  'ja': ja,
+  'zh': zhCN,
+  'ko': ko,
+  'th': th,
+};
 
 interface HistoryProps {
   sales: Sale[];
 }
 
 export const History: React.FC<HistoryProps> = ({ sales }) => {
-  const { t } = useLanguage();
+  const { t, formatCurrency, language } = useLanguage();
+  const currentLocale = locales[language] || enUS;
   
   // Group sales by day (mocking for UI)
   const days = [
@@ -41,9 +57,9 @@ export const History: React.FC<HistoryProps> = ({ sales }) => {
           <div key={idx} className="bg-slate-500/10 rounded-3xl p-5 border border-white/5 space-y-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-lg font-black tracking-tight">{format(day.date, 'MMM dd, yyyy')}</p>
+                <p className="text-lg font-black tracking-tight">{format(day.date, 'MMM dd, yyyy', { locale: currentLocale })}</p>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  {format(day.date, 'EEEE')} • {format(day.date, 'HH:mm')}
+                  {format(day.date, 'EEEE', { locale: currentLocale })} • {format(day.date, 'HH:mm')}
                 </p>
               </div>
               <span className="bg-primary/20 text-primary px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-primary/30">
@@ -54,7 +70,7 @@ export const History: React.FC<HistoryProps> = ({ sales }) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-0.5">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('totalSales')}</p>
-                <p className="text-xl font-black">${day.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                <p className="text-xl font-black">{formatCurrency(day.total)}</p>
               </div>
               <div className="space-y-0.5">
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('goalResult')}</p>

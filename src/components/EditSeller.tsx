@@ -4,7 +4,7 @@ import { X, Check, Camera, Trash2, User, Loader2, AlertCircle } from 'lucide-rea
 import { db, auth } from '../firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { Seller } from '../types';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage, languages } from '../contexts/LanguageContext';
 
 enum OperationType {
   CREATE = 'create',
@@ -64,7 +64,7 @@ interface EditSellerProps {
 }
 
 export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSuccess }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [name, setName] = useState(seller?.name || '');
@@ -73,6 +73,13 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
   const [observations, setObservations] = useState(seller?.observations || '');
   const [photoURL, setPhotoURL] = useState(seller?.photoURL || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const currencySymbol = languages.find(l => l.code === language)?.flag === '🇺🇸' ? '$' : 
+                   languages.find(l => l.code === language)?.currency === 'USD' ? '$' :
+                   new Intl.NumberFormat(languages.find(l => l.code === language)?.locale || 'en-US', {
+                     style: 'currency',
+                     currency: languages.find(l => l.code === language)?.currency || 'USD',
+                   }).format(0).replace(/\d/g, '').replace(/[.,]/g, '').trim();
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -199,13 +206,16 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
 
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('monthlySalesGoal')}</label>
-            <input
-              type="number"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              placeholder="5000"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-            />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold text-sm">{currencySymbol}</span>
+              <input
+                type="number"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="5000"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 pl-10 pr-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

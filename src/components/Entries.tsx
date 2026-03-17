@@ -9,7 +9,7 @@ interface EntriesProps {
 }
 
 export const Entries: React.FC<EntriesProps> = ({ sales }) => {
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   
   const methodIcons = {
     cash: Banknote,
@@ -43,7 +43,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
                 <Icon size={20} className="text-primary" />
                 <div className="space-y-0.5">
                   <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{t(method)}</p>
-                  <p className="text-xl font-black">${(totalsByMethod[method] || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                  <p className="text-xl font-black">{formatCurrency(totalsByMethod[method] || 0)}</p>
                 </div>
               </div>
             );
@@ -71,7 +71,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-black">${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                  <p className="text-sm font-black">{formatCurrency(total)}</p>
                   <div className="flex items-center justify-end gap-1 text-primary text-[10px] font-bold">
                     <TrendingUp size={10} />
                     <span>+15.2%</span>
@@ -87,7 +87,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
         <div className="flex justify-between items-center">
           <div>
             <p className="text-white/80 text-xs font-bold uppercase tracking-widest">{t('grandTotal')}</p>
-            <h2 className="text-white text-3xl font-black">${sales.reduce((acc, s) => acc + s.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h2>
+            <h2 className="text-white text-3xl font-black">{formatCurrency(sales.reduce((acc, s) => acc + s.amount, 0))}</h2>
           </div>
           <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
             <TrendingUp size={28} />

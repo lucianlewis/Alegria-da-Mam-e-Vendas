@@ -5,6 +5,7 @@ import { db, auth } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { analyzeReceipt, generateSalesMotivationImage } from '../services/geminiService';
 import { PaymentMethod } from '../types';
+import { useLanguage, languages } from '../contexts/LanguageContext';
 
 interface NewSaleProps {
   onBack: () => void;
@@ -12,12 +13,20 @@ interface NewSaleProps {
 }
 
 export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
+  const { t, formatCurrency, language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [amount, setAmount] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [motivationImage, setMotivationImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const currencySymbol = languages.find(l => l.code === language)?.flag === '🇺🇸' ? '$' : 
+                   languages.find(l => l.code === language)?.currency === 'USD' ? '$' :
+                   new Intl.NumberFormat(languages.find(l => l.code === language)?.locale || 'en-US', {
+                     style: 'currency',
+                     currency: languages.find(l => l.code === language)?.currency || 'USD',
+                   }).format(0).replace(/\d/g, '').replace(/[.,]/g, '').trim();
 
   const handleAnalyze = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,7 +71,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             await window.aistudio.openSelectKey();
           }
         }
-        const img = await generateSalesMotivationImage(`A celebration for a $${amount} sale!`);
+        const img = await generateSalesMotivationImage(`A celebration for a ${formatCurrency(parseFloat(amount))} sale!`);
         if (img) setMotivationImage(img);
       }
 
@@ -80,7 +89,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         <button onClick={onBack} className="text-white flex size-10 items-center justify-center hover:bg-white/5 rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="text-xl font-bold flex-1 ml-2">New Sale</h1>
+        <h1 className="text-xl font-bold flex-1 ml-2">{t('newSale')}</h1>
         <button className="text-primary flex size-10 items-center justify-center">
           <HelpCircle size={24} />
         </button>
@@ -90,9 +99,9 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between">
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-primary flex items-center gap-2">
-              <Sparkles size={16} /> AI Assistant
+              <Sparkles size={16} /> {t('aiAssistant')}
             </h3>
-            <p className="text-xs text-slate-400">Scan a receipt to auto-fill the form</p>
+            <p className="text-xs text-slate-400">{t('scanReceipt')}</p>
           </div>
           <button 
             onClick={() => fileInputRef.current?.click()}
@@ -100,7 +109,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             className="bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50"
           >
             {analyzing ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
-            {analyzing ? 'Analyzing...' : 'Scan'}
+            {analyzing ? t('analyzing') : t('scan')}
           </button>
           <input 
             type="file" 
@@ -112,11 +121,11 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-primary">Sale Details</h2>
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-primary">{t('saleDetails')}</h2>
           
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase">Payment Method</label>
+              <label className="text-xs font-bold text-slate-500 uppercase">{t('paymentMethod')}</label>
               <div className="grid grid-cols-2 gap-2">
                 {['cash', 'credit', 'debit', 'pix'].map((method) => (
                   <button
@@ -129,16 +138,16 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                         : "bg-white/5 border-white/10 text-slate-400"
                     )}
                   >
-                    {method}
+                    {t(method)}
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase">Amount</label>
+              <label className="text-xs font-bold text-slate-500 uppercase">{t('amount')}</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold text-xl">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold text-xl">{currencySymbol}</span>
                 <input
                   type="number"
                   value={amount}
@@ -157,7 +166,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-2"
           >
-            <h3 className="text-xs font-bold text-primary uppercase tracking-widest">Achievement Unlocked!</h3>
+            <h3 className="text-xs font-bold text-primary uppercase tracking-widest">{t('achievementUnlocked')}</h3>
             <img src={motivationImage} className="w-full rounded-2xl shadow-2xl border border-white/10" alt="Motivational" />
           </motion.div>
         )}
@@ -170,7 +179,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
           className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle size={20} />}
-          {loading ? 'Saving...' : 'Confirm Sale'}
+          {loading ? t('saving') : t('confirmSale')}
         </button>
       </footer>
     </div>

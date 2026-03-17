@@ -12,7 +12,7 @@ interface SellersListProps {
 }
 
 export const SellersList: React.FC<SellersListProps> = ({ sellers, onBack, onAddSeller, onEditSeller }) => {
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   
   return (
     <div className="p-4 space-y-6 min-h-screen bg-background-dark">
@@ -66,7 +66,7 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, onBack, onAdd
                   </div>
                   <div className="text-left">
                     <h4 className="text-sm font-bold">{seller.name}</h4>
-                    <p className="text-[10px] text-slate-500">{t('goal')}: ${seller.goal.toLocaleString()}</p>
+                    <p className="text-[10px] text-slate-500">{t('goal')}: {formatCurrency(seller.goal)}</p>
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-slate-600" />
