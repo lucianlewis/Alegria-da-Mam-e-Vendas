@@ -28,3 +28,13 @@ export interface Goal {
   current: number;
   status: 'on-track' | 'behind' | 'completed';
 }
+
+export interface Seller {
+  id?: string;
+  name: string;
+  phone: string;
+  goal: number;
+  observations: string;
+  photoURL: string;
+  createdAt?: any;
+}

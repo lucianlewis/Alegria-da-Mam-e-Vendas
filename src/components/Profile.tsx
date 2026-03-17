@@ -3,7 +3,11 @@ import { motion } from 'motion/react';
 import { User, LogOut, Shield, Globe, Lock, FileText, Trash2, ChevronRight, Moon } from 'lucide-react';
 import { auth, logout } from '../firebase';
 
-export const Profile: React.FC = () => {
+interface ProfileProps {
+  onNavigateSellers: () => void;
+}
+
+export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers }) => {
   const user = auth.currentUser;
 
   const sections = [
@@ -11,7 +15,7 @@ export const Profile: React.FC = () => {
       title: 'Management',
       items: [
         { icon: Globe, label: 'Stores', sub: 'Manage retail locations (12)' },
-        { icon: Shield, label: 'Sellers', sub: 'Staff & team permissions (48)' },
+        { icon: Shield, label: 'Sellers', sub: 'Staff & team permissions (48)', onClick: onNavigateSellers },
       ]
     },
     {
@@ -63,9 +67,11 @@ export const Profile: React.FC = () => {
             {section.items.map((item, idx) => (
               <div 
                 key={item.label}
+                onClick={item.onClick}
                 className={cn(
                   "flex items-center justify-between p-4 active:bg-white/5 transition-colors",
-                  idx !== section.items.length - 1 && "border-b border-white/5"
+                  idx !== section.items.length - 1 && "border-b border-white/5",
+                  item.onClick && "cursor-pointer"
                 )}
               >
                 <div className="flex items-center gap-4">

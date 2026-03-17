@@ -44,11 +44,26 @@
         "status": { "type": "string", "enum": ["on-track", "behind", "completed"] }
       },
       "required": ["title", "target", "current"]
+    },
+    "Seller": {
+      "title": "Seller",
+      "description": "Registered seller profile",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "goal": { "type": "number" },
+        "observations": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "goal"]
     }
   },
   "firestore": {
     "/users/{uid}": { "schema": "User", "description": "User profiles" },
     "/sales/{saleId}": { "schema": "Sale", "description": "Sales records" },
-    "/goals/{goalId}": { "schema": "Goal", "description": "Sales goals" }
+    "/goals/{goalId}": { "schema": "Goal", "description": "Sales goals" },
+    "/sellers/{sellerId}": { "schema": "Seller", "description": "Registered sellers" }
   }
 }

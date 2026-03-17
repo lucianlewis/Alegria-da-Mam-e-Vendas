@@ -47,7 +47,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                 activeTab === tab.id ? "text-primary" : "text-slate-500"
               )}
             >
-              <tab.icon size={24} fill={activeTab === tab.id ? "currentColor" : "none"} />
+              <tab.icon size={24} />
               <span className="text-[10px] font-medium">{tab.label}</span>
             </button>
           ))}
@@ -70,7 +70,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
                 activeTab === tab.id ? "text-primary" : "text-slate-500"
               )}
             >
-              <tab.icon size={24} fill={activeTab === tab.id ? "currentColor" : "none"} />
+              <tab.icon size={24} />
               <span className="text-[10px] font-medium">{tab.label}</span>
             </button>
           ))}

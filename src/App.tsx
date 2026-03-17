@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useCollectionData, useCollection } from 'react-firebase-hooks/firestore';
+import { collection, query, orderBy, limit, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { Auth } from './components/Auth';
 import { Layout } from './components/Layout';
@@ -10,13 +10,36 @@ import { Entries } from './components/Entries';
 import { History } from './components/History';
 import { Profile } from './components/Profile';
 import { NewSale } from './components/NewSale';
-import { Sale, Goal } from './types';
+import { SellersList } from './components/SellersList';
+import { EditSeller } from './components/EditSeller';
+import { Sale, Goal, Seller } from './types';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
   const [user, loading, error] = useAuthState(auth);
   const [activeTab, setActiveTab] = useState('home');
   const [showNewSale, setShowNewSale] = useState(false);
+  const [view, setView] = useState<'main' | 'sellers' | 'edit-seller'>('main');
+  const [selectedSeller, setSelectedSeller] = useState<Seller | undefined>();
+
+  // Ensure user document exists
+  useEffect(() => {
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
+      getDoc(userRef).then((docSnap) => {
+        if (!docSnap.exists()) {
+          setDoc(userRef, {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            role: user.email === 'mahteusmachado@gmail.com' ? 'admin' : 'seller',
+            createdAt: serverTimestamp()
+          }).catch(err => console.error("Error creating user doc:", err));
+        }
+      });
+    }
+  }, [user]);
 
   // Fetch sales
   const salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'), limit(50));
@@ -26,10 +49,19 @@ export default function App() {
   const goalsQuery = query(collection(db, 'goals'));
   const [goalsData, goalsLoading] = useCollectionData(goalsQuery);
 
+  // Fetch sellers
+  const sellersQuery = query(collection(db, 'sellers'), orderBy('name', 'asc'));
+  const [sellersSnapshot, sellersLoading] = useCollection(sellersQuery);
+
   const sales = (salesData || []) as Sale[];
   const goals = (goalsData || [
     { id: '1', title: 'Monthly Sales Goal', target: 5000, current: 4250, status: 'on-track' }
   ]) as Goal[];
+  
+  const sellers = (sellersSnapshot?.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) || []) as Seller[];
 
   if (loading) {
     return (
@@ -52,6 +84,33 @@ export default function App() {
     );
   }
 
+  if (view === 'sellers') {
+    return (
+      <SellersList 
+        sellers={sellers}
+        onBack={() => setView('main')}
+        onAddSeller={() => {
+          setSelectedSeller(undefined);
+          setView('edit-seller');
+        }}
+        onEditSeller={(seller) => {
+          setSelectedSeller(seller);
+          setView('edit-seller');
+        }}
+      />
+    );
+  }
+
+  if (view === 'edit-seller') {
+    return (
+      <EditSeller 
+        seller={selectedSeller}
+        onBack={() => setView('sellers')}
+        onSuccess={() => setView('sellers')}
+      />
+    );
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -61,7 +120,7 @@ export default function App() {
       case 'history':
         return <History sales={sales} />;
       case 'profile':
-        return <Profile />;
+        return <Profile onNavigateSellers={() => setView('sellers')} />;
       default:
         return <Dashboard sales={sales} goals={goals} />;
     }
