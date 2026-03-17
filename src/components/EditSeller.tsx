@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { motion } from 'motion/react';
-import { X, Check, Camera, Trash2, User, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Check, Camera, Trash2, User, Loader2, AlertCircle } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { Seller } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 enum OperationType {
   CREATE = 'create',
@@ -63,7 +64,9 @@ interface EditSellerProps {
 }
 
 export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSuccess }) => {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [name, setName] = useState(seller?.name || '');
   const [phone, setPhone] = useState(seller?.phone || '');
   const [goal, setGoal] = useState(seller?.goal?.toString() || '');
@@ -114,7 +117,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
   };
 
   const handleDelete = async () => {
-    if (!seller?.id || !window.confirm('Are you sure you want to remove this seller?')) return;
+    if (!seller?.id) return;
 
     setLoading(true);
     const path = `sellers/${seller.id}`;
@@ -134,7 +137,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
         <button onClick={onBack} className="text-white flex size-10 items-center justify-center hover:bg-white/5 rounded-full">
           <X size={24} />
         </button>
-        <h1 className="text-xl font-bold flex-1 text-center">{seller ? 'Edit Seller' : 'New Seller'}</h1>
+        <h1 className="text-xl font-bold flex-1 text-center">{seller ? t('editSeller') : t('newSeller')}</h1>
         <button 
           onClick={handleSubmit}
           disabled={loading || !name || !goal}
@@ -168,34 +171,34 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
               className="hidden" 
             />
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Change Photo</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t('changePhoto')}</p>
         </div>
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">Seller Name</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('sellerName')}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Full Name"
+              placeholder={t('fullName')}
               className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">Contact/Phone</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('contactPhone')}</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+1 (555) 000-0000"
+              placeholder={t('phonePlaceholder')}
               className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">Monthly Sales Goal ($)</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('monthlySalesGoal')}</label>
             <input
               type="number"
               value={goal}
@@ -206,11 +209,11 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">Observations</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('observations')}</label>
             <textarea
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
-              placeholder="Add notes about performance, schedule, etc."
+              placeholder={t('observationsPlaceholder')}
               rows={4}
               className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
             />
@@ -219,14 +222,53 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
 
         {seller && (
           <button 
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             className="w-full flex items-center justify-center gap-2 text-rose-500 font-bold text-sm py-4 active:bg-rose-500/10 rounded-2xl transition-colors"
           >
             <Trash2 size={18} />
-            Remove Seller
+            {t('removeSeller')}
           </button>
         )}
       </main>
+
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-background-dark border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-6"
+            >
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="size-16 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-500">
+                  <AlertCircle size={32} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold">{t('removeSeller')}</h3>
+                  <p className="text-sm text-slate-400">{t('confirmRemoveSeller')}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 py-4 rounded-2xl bg-white/5 text-sm font-bold border border-white/10 active:scale-95 transition-transform"
+                >
+                  {t('cancel')}
+                </button>
+                <button 
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="flex-1 py-4 rounded-2xl bg-rose-500 text-white text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-transform disabled:opacity-50"
+                >
+                  {loading ? <Loader2 size={20} className="animate-spin mx-auto" /> : t('removeSeller')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

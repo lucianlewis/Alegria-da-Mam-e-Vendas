@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Home, ReceiptText, History, User, Plus } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useLanguage } from '../contexts/LanguageContext';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,11 +17,13 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange, onPlusClick }) => {
+  const { t } = useLanguage();
+  
   const tabs = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'entries', icon: ReceiptText, label: 'Entries' },
-    { id: 'history', icon: History, label: 'History' },
-    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'home', icon: Home, label: t('dashboard') },
+    { id: 'entries', icon: ReceiptText, label: t('entries') },
+    { id: 'history', icon: History, label: t('history') },
+    { id: 'profile', icon: User, label: t('profile') },
   ];
 
   return (

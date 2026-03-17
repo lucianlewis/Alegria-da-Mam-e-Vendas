@@ -2,12 +2,15 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Banknote, CreditCard, Smartphone, QrCode, User as UserIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Sale } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface EntriesProps {
   sales: Sale[];
 }
 
 export const Entries: React.FC<EntriesProps> = ({ sales }) => {
+  const { t } = useLanguage();
+  
   const methodIcons = {
     cash: Banknote,
     credit: CreditCard,
@@ -23,13 +26,13 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
   return (
     <div className="p-4 space-y-8">
       <header className="flex items-center justify-center py-2 relative">
-        <h2 className="text-lg font-bold">Entries</h2>
+        <h2 className="text-lg font-bold">{t('entries')}</h2>
       </header>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">Totals by Payment Method</h3>
-          <span className="text-slate-500 text-[10px] font-bold uppercase">Daily View</span>
+          <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">{t('totalsByPaymentMethod')}</h3>
+          <span className="text-slate-500 text-[10px] font-bold uppercase">{t('dailyView')}</span>
         </div>
         
         <div className="grid grid-cols-2 gap-3">
@@ -39,7 +42,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
               <div key={method} className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
                 <Icon size={20} className="text-primary" />
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{method}</p>
+                  <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{t(method)}</p>
                   <p className="text-xl font-black">${(totalsByMethod[method] || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                 </div>
               </div>
@@ -49,7 +52,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">Seller Performance</h3>
+        <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">{t('sellerPerformance')}</h3>
         <div className="space-y-3">
           {Array.from(new Set(sales.map(s => s.sellerId))).map(sellerId => {
             const sellerSales = sales.filter(s => s.sellerId === sellerId);
@@ -64,7 +67,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
                   </div>
                   <div>
                     <h4 className="text-sm font-bold">{name}</h4>
-                    <p className="text-[10px] text-slate-500">{sellerSales.length} sales today</p>
+                    <p className="text-[10px] text-slate-500">{sellerSales.length} {t('salesToday')}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -83,7 +86,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
       <div className="p-6 rounded-3xl bg-gradient-to-br from-primary to-primary/60 shadow-xl shadow-primary/20">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-white/80 text-xs font-bold uppercase tracking-widest">Grand Total</p>
+            <p className="text-white/80 text-xs font-bold uppercase tracking-widest">{t('grandTotal')}</p>
             <h2 className="text-white text-3xl font-black">${sales.reduce((acc, s) => acc + s.amount, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</h2>
           </div>
           <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
