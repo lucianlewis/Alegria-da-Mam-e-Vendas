@@ -68,6 +68,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [name, setName] = useState(seller?.name || '');
+  const [email, setEmail] = useState(seller?.email || '');
   const [phone, setPhone] = useState(seller?.phone || '');
   const [goal, setGoal] = useState(seller?.goal?.toString() || '');
   const [observations, setObservations] = useState(seller?.observations || '');
@@ -100,6 +101,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
     try {
       const sellerData = {
         name,
+        email,
         phone,
         goal: parseFloat(goal),
         observations,
@@ -139,9 +141,9 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
   };
 
   return (
-    <div className="min-h-screen bg-background-dark flex flex-col">
-      <header className="sticky top-0 z-10 flex items-center bg-background-dark p-4 border-b border-white/5">
-        <button onClick={onBack} className="text-white flex size-10 items-center justify-center hover:bg-white/5 rounded-full">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] flex flex-col transition-colors duration-300">
+      <header className="sticky top-0 z-10 flex items-center bg-[var(--bg-color)] p-4 border-b border-[var(--border-color)]">
+        <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <X size={24} />
         </button>
         <h1 className="text-xl font-bold flex-1 text-center">{seller ? t('editSeller') : t('newSeller')}</h1>
@@ -157,7 +159,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
       <main className="flex-1 overflow-y-auto p-6 space-y-8 pb-32">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <div className="size-40 rounded-full bg-white/10 border-4 border-white/5 overflow-hidden flex items-center justify-center">
+            <div className="size-40 rounded-full bg-[var(--card-bg)] border-4 border-[var(--border-color)] overflow-hidden flex items-center justify-center">
               {photoURL ? (
                 <img src={photoURL} className="w-full h-full object-cover" alt="Preview" />
               ) : (
@@ -166,7 +168,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
             </div>
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-2 right-2 size-10 bg-primary rounded-full border-4 border-background-dark flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform"
+              className="absolute bottom-2 right-2 size-10 bg-primary rounded-full border-4 border-[var(--bg-color)] flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform"
             >
               <Camera size={20} />
             </button>
@@ -189,7 +191,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('fullName')}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
             />
           </div>
 
@@ -200,7 +202,18 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder={t('phonePlaceholder')}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="vendedor@exemplo.com"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
             />
           </div>
 
@@ -213,7 +226,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 placeholder="5000"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 pl-10 pr-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-10 pr-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               />
             </div>
           </div>
@@ -225,7 +238,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
               onChange={(e) => setObservations(e.target.value)}
               placeholder={t('observationsPlaceholder')}
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
             />
           </div>
         </div>
@@ -248,7 +261,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-background-dark border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-6"
+              className="bg-[var(--bg-color)] border border-[var(--border-color)] rounded-3xl p-6 w-full max-w-sm space-y-6"
             >
               <div className="flex flex-col items-center text-center gap-4">
                 <div className="size-16 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-500">
@@ -263,7 +276,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
               <div className="flex gap-3">
                 <button 
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-4 rounded-2xl bg-white/5 text-sm font-bold border border-white/10 active:scale-95 transition-transform"
+                  className="flex-1 py-4 rounded-2xl bg-[var(--card-bg)] text-sm font-bold border border-[var(--border-color)] active:scale-95 transition-transform"
                 >
                   {t('cancel')}
                 </button>

@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, LogOut, Shield, Globe, Lock, FileText, Trash2, ChevronRight, Moon, Check } from 'lucide-react';
+import { User, LogOut, Shield, Globe, Lock, FileText, Trash2, ChevronRight, Moon, Check, TrendingUp } from 'lucide-react';
 import { auth, logout } from '../firebase';
 import { useLanguage, languages, LanguageCode } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ProfileProps {
   onNavigateSellers: () => void;
+  onViewPerformance: () => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers }) => {
+export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerformance }) => {
   const user = auth.currentUser;
   const { t, language, setLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
   const currentLanguage = languages.find(l => l.code === language) || languages[0];
@@ -19,6 +22,7 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers }) => {
     {
       title: t('management'),
       items: [
+        { icon: TrendingUp, label: t('sellerPerformance'), sub: t('performance'), onClick: onViewPerformance },
         { icon: Globe, label: t('stores'), sub: `${t('manageRetail')} (12)` },
         { icon: Shield, label: t('sellers'), sub: `${t('staffPermissions')} (48)`, onClick: onNavigateSellers },
       ]
@@ -26,7 +30,7 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers }) => {
     {
       title: t('preferences'),
       items: [
-        { icon: Moon, label: t('darkMode'), toggle: true },
+        { icon: Moon, label: t('darkMode'), toggle: true, onClick: toggleTheme },
         { 
           icon: Globe, 
           label: t('language'), 
@@ -78,14 +82,14 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers }) => {
       {sections.map((section) => (
         <div key={section.title} className="space-y-4">
           <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{section.title}</h4>
-          <div className="bg-white/5 rounded-3xl border border-white/5 overflow-hidden">
+          <div className="bg-[var(--card-bg)] rounded-3xl border border-[var(--border-color)] overflow-hidden">
             {section.items.map((item, idx) => (
               <React.Fragment key={item.label}>
                 <div 
                   onClick={item.onClick}
                   className={cn(
-                    "flex items-center justify-between p-4 active:bg-white/5 transition-colors",
-                    (idx !== section.items.length - 1 || (item.label === t('language') && showLanguageDropdown)) && "border-b border-white/5",
+                    "flex items-center justify-between p-4 active:bg-black/5 dark:active:bg-white/5 transition-colors",
+                    (idx !== section.items.length - 1 || (item.label === t('language') && showLanguageDropdown)) && "border-b border-[var(--border-color)]",
                     item.onClick && "cursor-pointer"
                   )}
                 >
@@ -101,8 +105,16 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers }) => {
                   <div className="flex items-center gap-2">
                     {item.value && <span className="text-xs text-slate-500">{item.value}</span>}
                     {item.toggle ? (
-                      <div className="w-10 h-6 bg-primary rounded-full relative p-1">
-                        <div className="size-4 bg-white rounded-full ml-auto" />
+                      <div 
+                        className={cn(
+                          "w-10 h-6 rounded-full relative p-1 transition-colors cursor-pointer",
+                          theme === 'dark' ? "bg-primary" : "bg-slate-300"
+                        )}
+                      >
+                        <motion.div 
+                          animate={{ x: theme === 'dark' ? 16 : 0 }}
+                          className="size-4 bg-white rounded-full shadow-sm" 
+                        />
                       </div>
                     ) : (
                       <ChevronRight 
@@ -155,8 +167,8 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers }) => {
         </div>
       ))}
 
-      <div className="bg-white/5 rounded-3xl border border-white/5 overflow-hidden">
-        <button className="w-full flex items-center gap-4 p-4 text-rose-500 active:bg-rose-500/10 transition-colors border-b border-white/5">
+      <div className="bg-[var(--card-bg)] rounded-3xl border border-[var(--border-color)] overflow-hidden">
+        <button className="w-full flex items-center gap-4 p-4 text-rose-500 active:bg-rose-500/10 transition-colors border-b border-[var(--border-color)]">
           <Trash2 size={20} />
           <span className="text-sm font-bold">{t('deleteAccount')}</span>
         </button>

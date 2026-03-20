@@ -22,16 +22,18 @@
         "sellerName": { "type": "string" },
         "amount": { "type": "number" },
         "paymentMethod": { "type": "string", "enum": ["cash", "credit", "debit", "pix"] },
+        "source": { "type": "string", "enum": ["physical-store", "whatsapp", "instagram"] },
         "timestamp": { "type": "string", "format": "date-time" },
-        "breakdown": {
+        "cashDetails": {
           "type": "object",
           "properties": {
+            "bills": { "type": "object" },
             "coins": { "type": "object" },
-            "bills": { "type": "object" }
+            "total": { "type": "number" }
           }
         }
       },
-      "required": ["sellerId", "amount", "paymentMethod", "timestamp"]
+      "required": ["sellerId", "amount", "paymentMethod", "source", "timestamp"]
     },
     "Goal": {
       "title": "Goal",

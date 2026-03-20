@@ -4,13 +4,32 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   
   --color-primary: #ff0080;
-  --color-background-dark: #230f19;
+  --color-background-dark: #212121;
+  --color-background-light: #ffffff;
   --color-card-dark: #313131;
 }
 
 @layer base {
+  :root {
+    --bg-color: var(--color-background-light);
+    --text-color: #1a1a1a;
+    --card-bg: rgba(0, 0, 0, 0.05);
+    --border-color: rgba(0, 0, 0, 0.05);
+    --muted-text: #64748b;
+  }
+
+  :root.dark {
+    --bg-color: var(--color-background-dark);
+    --text-color: #ffffff;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --border-color: rgba(255, 255, 255, 0.05);
+    --muted-text: #94a3b8;
+  }
+
   body {
-    @apply bg-background-dark text-white font-sans;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    @apply font-sans transition-colors duration-300;
     -webkit-tap-highlight-color: transparent;
   }
 }

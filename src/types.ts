@@ -1,4 +1,5 @@
 export type PaymentMethod = 'cash' | 'credit' | 'debit' | 'pix';
+export type SaleSource = 'physical-store' | 'whatsapp' | 'instagram';
 
 export interface UserProfile {
   uid: string;
@@ -14,10 +15,12 @@ export interface Sale {
   sellerName: string;
   amount: number;
   paymentMethod: PaymentMethod;
+  source: SaleSource;
   timestamp: any; // Firestore Timestamp
-  breakdown?: {
-    coins: Record<string, number>;
-    bills: Record<string, number>;
+  cashDetails?: {
+    bills: Record<string, number>; // e.g., { '100': 2, '50': 1 }
+    coins: Record<string, number>; // e.g., { '1': 5, '0.5': 2 }
+    total: number;
   };
 }
 
@@ -32,6 +35,7 @@ export interface Goal {
 export interface Seller {
   id?: string;
   name: string;
+  email?: string;
   phone: string;
   goal: number;
   observations: string;

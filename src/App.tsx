@@ -12,6 +12,7 @@ import { Profile } from './components/Profile';
 import { NewSale } from './components/NewSale';
 import { SellersList } from './components/SellersList';
 import { EditSeller } from './components/EditSeller';
+import { SellerPerformance } from './components/SellerPerformance';
 import { Sale, Goal, Seller } from './types';
 import { Loader2 } from 'lucide-react';
 
@@ -19,7 +20,7 @@ export default function App() {
   const [user, loading, error] = useAuthState(auth);
   const [activeTab, setActiveTab] = useState('home');
   const [showNewSale, setShowNewSale] = useState(false);
-  const [view, setView] = useState<'main' | 'sellers' | 'edit-seller'>('main');
+  const [view, setView] = useState<'main' | 'sellers' | 'edit-seller' | 'performance'>('main');
   const [selectedSeller, setSelectedSeller] = useState<Seller | undefined>();
 
   // Ensure user document exists
@@ -65,7 +66,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-color)] flex items-center justify-center transition-colors duration-300">
         <Loader2 className="animate-spin text-primary" size={48} />
       </div>
     );
@@ -97,6 +98,25 @@ export default function App() {
           setSelectedSeller(seller);
           setView('edit-seller');
         }}
+        onViewPerformance={(seller) => {
+          setSelectedSeller(seller);
+          setView('performance');
+        }}
+      />
+    );
+  }
+
+  if (view === 'performance' && selectedSeller) {
+    return (
+      <SellerPerformance 
+        seller={selectedSeller}
+        onBack={() => {
+          if (activeTab === 'entries' || activeTab === 'profile') {
+            setView('main');
+          } else {
+            setView('sellers');
+          }
+        }}
       />
     );
   }
@@ -114,15 +134,39 @@ export default function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <Dashboard sales={sales} goals={goals} />;
+        return <Dashboard sales={sales} goals={goals} sellers={sellers} />;
       case 'entries':
-        return <Entries sales={sales} />;
+        return (
+          <Entries 
+            sales={sales} 
+            sellers={sellers}
+            onViewPerformance={(seller) => {
+              setSelectedSeller(seller);
+              setView('performance');
+            }}
+          />
+        );
       case 'history':
         return <History sales={sales} />;
       case 'profile':
-        return <Profile onNavigateSellers={() => setView('sellers')} />;
+        return (
+          <Profile 
+            onNavigateSellers={() => setView('sellers')} 
+            onViewPerformance={() => {
+              // If admin, maybe go to sellers list, if seller, go to their own performance
+              // For now, let's find the seller object for the current user
+              const currentSeller = sellers.find(s => s.email === user.email);
+              if (currentSeller) {
+                setSelectedSeller(currentSeller);
+                setView('performance');
+              } else {
+                setView('sellers');
+              }
+            }}
+          />
+        );
       default:
-        return <Dashboard sales={sales} goals={goals} />;
+        return <Dashboard sales={sales} goals={goals} sellers={sellers} />;
     }
   };
 
@@ -131,6 +175,8 @@ export default function App() {
       activeTab={activeTab} 
       onTabChange={setActiveTab} 
       onPlusClick={() => setShowNewSale(true)}
+      onSangriaClick={() => alert('Função Sangria em breve!')}
+      onReforcoClick={() => alert('Função Reforço em breve!')}
     >
       {renderContent()}
     </Layout>

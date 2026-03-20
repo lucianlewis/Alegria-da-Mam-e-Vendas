@@ -9,15 +9,16 @@ interface SellersListProps {
   onBack: () => void;
   onAddSeller: () => void;
   onEditSeller: (seller: Seller) => void;
+  onViewPerformance: (seller: Seller) => void;
 }
 
-export const SellersList: React.FC<SellersListProps> = ({ sellers, onBack, onAddSeller, onEditSeller }) => {
+export const SellersList: React.FC<SellersListProps> = ({ sellers, onBack, onAddSeller, onEditSeller, onViewPerformance }) => {
   const { t, formatCurrency } = useLanguage();
   
   return (
-    <div className="p-4 space-y-6 min-h-screen bg-background-dark">
+    <div className="p-4 space-y-6 min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] transition-colors duration-300">
       <header className="flex items-center justify-between py-2">
-        <button onClick={onBack} className="text-white flex size-10 items-center justify-center hover:bg-white/5 rounded-full">
+        <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <ArrowLeft size={24} />
         </button>
         <h2 className="text-xl font-bold tracking-tight">{t('sellers')}</h2>
@@ -38,7 +39,7 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, onBack, onAdd
         <div className="space-y-3">
           {sellers.length === 0 ? (
             <div className="text-center py-12 space-y-4">
-              <div className="size-16 rounded-full bg-white/5 flex items-center justify-center mx-auto text-slate-600">
+              <div className="size-16 rounded-full bg-[var(--card-bg)] flex items-center justify-center mx-auto text-slate-600">
                 <User size={32} />
               </div>
               <p className="text-slate-500 text-sm">{t('noSellersYet')}</p>
@@ -51,10 +52,10 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, onBack, onAdd
             </div>
           ) : (
             sellers.map((seller) => (
-              <button
+              <div
                 key={seller.id}
-                onClick={() => onEditSeller(seller)}
-                className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-4 active:bg-white/10 transition-colors"
+                className="w-full flex items-center justify-between bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 transition-colors hover:bg-white/5 cursor-pointer"
+                onClick={() => onViewPerformance(seller)}
               >
                 <div className="flex items-center gap-3">
                   <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
@@ -69,8 +70,23 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, onBack, onAdd
                     <p className="text-[10px] text-slate-500">{t('goal')}: {formatCurrency(seller.goal)}</p>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-slate-600" />
-              </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    className="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase"
+                  >
+                    {t('performance')}
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditSeller(seller);
+                    }}
+                    className="text-slate-400 hover:bg-white/5 size-8 rounded-lg flex items-center justify-center transition-colors"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
             ))
           )}
         </div>

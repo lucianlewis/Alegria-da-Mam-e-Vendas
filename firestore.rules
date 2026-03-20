@@ -18,8 +18,9 @@
 //   - sellerName: string (required)
 //   - amount: number (required, positive)
 //   - paymentMethod: string (required, enum: ['cash', 'credit', 'debit', 'pix'])
+//   - source: string (required, enum: ['physical-store', 'whatsapp', 'instagram'])
 //   - timestamp: timestamp (required)
-//   - breakdown: map (optional)
+//   - cashDetails: map (optional)
 //
 // Collection: goals
 // Document ID: auto-generated
@@ -49,9 +50,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-         (request.auth.token.email == "mahteusmachado@gmail.com" && request.auth.token.email_verified == true));
+        (request.auth.token.email == "mahteusmachado@gmail.com" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
     function isValidEmail(email) {
@@ -66,10 +67,12 @@ service cloud.firestore {
     }
 
     function isValidSale(data) {
-      return data.keys().hasAll(['sellerId', 'amount', 'paymentMethod', 'timestamp']) &&
+      return data.keys().hasAll(['sellerId', 'sellerName', 'amount', 'paymentMethod', 'source', 'timestamp']) &&
              data.sellerId is string &&
-             data.amount is number && data.amount >= 0 &&
+             data.sellerName is string &&
+             data.amount is number &&
              data.paymentMethod in ['cash', 'credit', 'debit', 'pix'] &&
+             data.source in ['physical-store', 'whatsapp', 'instagram'] &&
              data.timestamp is timestamp;
     }
 
@@ -107,8 +110,9 @@ service cloud.firestore {
     match /sales/{saleId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidSale(request.resource.data) && 
-                    request.resource.data.sellerId == request.auth.uid;
-      allow update, delete: if isAdmin();
+                    (request.resource.data.sellerId == request.auth.uid || isAdmin());
+      allow update: if isAdmin() && isValidSale(request.resource.data);
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.sellerId == request.auth.uid);
     }
 
     match /goals/{goalId} {

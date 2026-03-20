@@ -7,20 +7,20 @@ import { useLanguage } from '../contexts/LanguageContext';
 export const Auth: React.FC = () => {
   const { t } = useLanguage();
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background-dark p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--bg-color)] p-6 transition-colors duration-300">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md text-center space-y-8"
       >
         <div className="space-y-2">
-          <h1 className="text-4xl font-black text-white tracking-tighter">
+          <h1 className="text-4xl font-black text-[var(--text-color)] tracking-tighter">
             Sales<span className="text-primary">Pro</span>
           </h1>
           <p className="text-slate-400">{t('welcomeMessage')}</p>
         </div>
 
-        <div className="bg-card-dark p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
+        <div className="bg-[var(--card-bg)] p-8 rounded-3xl border border-[var(--border-color)] shadow-2xl space-y-6">
           <p className="text-slate-300 text-sm">{t('signInDescription')}</p>
           
           <button

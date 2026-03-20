@@ -1,14 +1,16 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Banknote, CreditCard, Smartphone, QrCode, User as UserIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { Sale } from '../types';
+import { Banknote, CreditCard, Smartphone, QrCode, User as UserIcon, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
+import { Sale, Seller } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface EntriesProps {
   sales: Sale[];
+  sellers: Seller[];
+  onViewPerformance: (seller: Seller) => void;
 }
 
-export const Entries: React.FC<EntriesProps> = ({ sales }) => {
+export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerformance }) => {
   const { t, formatCurrency } = useLanguage();
   
   const methodIcons = {
@@ -39,7 +41,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
           {['cash', 'credit', 'debit', 'pix'].map((method) => {
             const Icon = methodIcons[method as keyof typeof methodIcons];
             return (
-              <div key={method} className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
+              <div key={method} className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-3">
                 <Icon size={20} className="text-primary" />
                 <div className="space-y-0.5">
                   <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{t(method)}</p>
@@ -59,10 +61,31 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
             const total = sellerSales.reduce((acc, s) => acc + s.amount, 0);
             const name = sellerSales[0].sellerName;
             
+            // Try to find the seller object by ID, then by name
+            let seller = sellers.find(s => s.id === sellerId);
+            if (!seller) {
+              seller = sellers.find(s => s.name === name);
+            }
+            
+            // If still not found, create a virtual seller object
+            const displaySeller: Seller = (seller as Seller) || {
+              id: sellerId,
+              name: name,
+              email: '',
+              phone: '',
+              goal: 0,
+              observations: '',
+              photoURL: ''
+            };
+            
             return (
-              <div key={sellerId} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-4">
+              <div 
+                key={sellerId} 
+                onClick={() => onViewPerformance(displaySeller)}
+                className="flex items-center justify-between bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 transition-all cursor-pointer active:scale-[0.98] hover:bg-white/5 group"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                  <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                     <UserIcon size={20} />
                   </div>
                   <div>
@@ -70,12 +93,15 @@ export const Entries: React.FC<EntriesProps> = ({ sales }) => {
                     <p className="text-[10px] text-slate-500">{sellerSales.length} {t('salesToday')}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-black">{formatCurrency(total)}</p>
-                  <div className="flex items-center justify-end gap-1 text-primary text-[10px] font-bold">
-                    <TrendingUp size={10} />
-                    <span>+15.2%</span>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-black">{formatCurrency(total)}</p>
+                    <div className="flex items-center justify-end gap-1 text-primary text-[10px] font-bold">
+                      <TrendingUp size={10} />
+                      <span>+15.2%</span>
+                    </div>
                   </div>
+                  <ChevronRight size={16} className="text-slate-600 group-hover:text-primary transition-colors" />
                 </div>
               </div>
             );
