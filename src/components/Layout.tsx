@@ -48,8 +48,8 @@ export const Layout: React.FC<LayoutProps> = ({
   // flatPath: A straight line across the top (Estado 3)
   // Both paths have the same structure for smooth morphing.
   // Center is 200. Button radius is 32. Notch radius is 35 (3px gap).
-  const notchedPath = "M0,0 H125 C150,0 160,35 200,35 C240,35 250,0 275,0 H400 V54 H0 Z";
-  const flatPath = "M0,0 H125 C150,0 160,0 200,0 C240,0 250,0 275,0 H400 V54 H0 Z";
+  const notchedPath = "M0,0 H140 C165,0 175,35 200,35 C225,35 235,0 260,0 H400 V54 H0 Z";
+  const flatPath = "M0,0 H140 C165,0 175,0 200,0 C225,0 235,0 260,0 H400 V54 H0 Z";
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] flex flex-col max-w-md mx-auto border-x border-black/5 dark:border-white/5 relative overflow-hidden transition-colors duration-300">
@@ -69,7 +69,8 @@ export const Layout: React.FC<LayoutProps> = ({
         <div className="absolute bottom-0 w-full h-[54px] pointer-events-auto">
           <svg 
             viewBox="0 0 400 54" 
-            className="absolute inset-0 w-full h-full fill-[#FFF5F7] drop-shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
+            className="absolute inset-0 w-full h-full drop-shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
+            style={{ fill: 'var(--nav-bg)' }}
             preserveAspectRatio="none"
           >
             <motion.path 
@@ -78,8 +79,7 @@ export const Layout: React.FC<LayoutProps> = ({
               transition={{ 
                 type: "spring", 
                 stiffness: 180, 
-                damping: 28,
-                delay: 0.05 // Slight delay so the button "pulls" the curve
+                damping: 28
               }}
             />
           </svg>
@@ -93,7 +93,7 @@ export const Layout: React.FC<LayoutProps> = ({
                   onClick={() => onTabChange(tab.id)}
                   className={cn(
                     "flex flex-col items-center gap-0.5 transition-colors",
-                    activeTab === tab.id ? "text-primary" : "text-slate-600"
+                    activeTab === tab.id ? "text-primary" : "text-[var(--nav-icon-unselected)]"
                   )}
                 >
                   <tab.icon size={22} />
@@ -109,7 +109,7 @@ export const Layout: React.FC<LayoutProps> = ({
                   onClick={() => onTabChange(tab.id)}
                   className={cn(
                     "flex flex-col items-center gap-0.5 transition-colors",
-                    activeTab === tab.id ? "text-primary" : "text-slate-600"
+                    activeTab === tab.id ? "text-primary" : "text-[var(--nav-icon-unselected)]"
                   )}
                 >
                   <tab.icon size={22} />
@@ -158,12 +158,10 @@ export const Layout: React.FC<LayoutProps> = ({
               // Half travel is 43px. New target: 26 - 43 = -17.
               // Adjusted for 6dp gap: y: 23 (from 26). New open target: 23 - 43 = -20.
               y: isMenuOpen ? -20 : 23, 
-              rotate: isMenuOpen ? 45 : 0,
-              scale: isMenuOpen ? 1.1 : 1,
             }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            transition={{ type: "spring", stiffness: 180, damping: 28 }}
             className={cn(
-              "size-16 bg-primary rounded-full flex items-center justify-center text-white shadow-xl active:scale-90 transition-all z-50",
+              "size-16 bg-primary rounded-full flex items-center justify-center text-white shadow-xl active:scale-95 z-50",
               isMenuOpen && "shadow-primary/40"
             )}
           >

@@ -42,3 +42,20 @@ export interface Seller {
   photoURL: string;
   createdAt?: any;
 }
+
+export type CashMovementType = 'sangria' | 'reforco';
+
+export interface CashMovement {
+  id?: string;
+  type: CashMovementType;
+  amount: number;
+  observation: string;
+  timestamp: any; // Firestore Timestamp
+  cashDetails: {
+    bills: Record<string, number>;
+    coins: Record<string, number>;
+    total: number;
+  };
+  userId: string;
+  userName: string;
+}

@@ -8,9 +8,10 @@ interface EntriesProps {
   sales: Sale[];
   sellers: Seller[];
   onViewPerformance: (seller: Seller) => void;
+  onViewMethodDetail: (method: string) => void;
 }
 
-export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerformance }) => {
+export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerformance, onViewMethodDetail }) => {
   const { t, formatCurrency } = useLanguage();
   
   const methodIcons = {
@@ -41,8 +42,12 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
           {['cash', 'credit', 'debit', 'pix'].map((method) => {
             const Icon = methodIcons[method as keyof typeof methodIcons];
             return (
-              <div key={method} className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-3">
-                <Icon size={20} className="text-primary" />
+              <div 
+                key={method} 
+                onClick={() => onViewMethodDetail(method)}
+                className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-3 transition-all cursor-pointer active:scale-[0.98] hover:bg-white/5 group"
+              >
+                <Icon size={20} className="text-primary group-hover:scale-110 transition-transform" />
                 <div className="space-y-0.5">
                   <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{t(method)}</p>
                   <p className="text-xl font-black">{formatCurrency(totalsByMethod[method] || 0)}</p>

@@ -16,6 +16,8 @@
     --card-bg: rgba(0, 0, 0, 0.05);
     --border-color: rgba(0, 0, 0, 0.05);
     --muted-text: #64748b;
+    --nav-bg: #FFF5F7;
+    --nav-icon-unselected: #64748b;
   }
 
   :root.dark {
@@ -24,6 +26,8 @@
     --card-bg: rgba(255, 255, 255, 0.05);
     --border-color: rgba(255, 255, 255, 0.05);
     --muted-text: #94a3b8;
+    --nav-bg: #1a1a1a;
+    --nav-icon-unselected: #FFF5F7;
   }
 
   body {

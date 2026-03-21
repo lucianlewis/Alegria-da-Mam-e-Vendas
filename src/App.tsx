@@ -13,15 +13,20 @@ import { NewSale } from './components/NewSale';
 import { SellersList } from './components/SellersList';
 import { EditSeller } from './components/EditSeller';
 import { SellerPerformance } from './components/SellerPerformance';
-import { Sale, Goal, Seller } from './types';
+import { CashMovement } from './components/CashMovement';
+import { PaymentMethodDetail } from './components/PaymentMethodDetail';
+import { Sale, Goal, Seller, CashMovementType, CashMovement as CashMovementInterface } from './types';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
   const [user, loading, error] = useAuthState(auth);
   const [activeTab, setActiveTab] = useState('home');
   const [showNewSale, setShowNewSale] = useState(false);
+  const [showCashMovement, setShowCashMovement] = useState(false);
+  const [cashMovementType, setCashMovementType] = useState<CashMovementType>('sangria');
   const [view, setView] = useState<'main' | 'sellers' | 'edit-seller' | 'performance'>('main');
   const [selectedSeller, setSelectedSeller] = useState<Seller | undefined>();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
 
   // Ensure user document exists
   useEffect(() => {
@@ -46,6 +51,10 @@ export default function App() {
   const salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'), limit(50));
   const [salesData, salesLoading] = useCollectionData(salesQuery);
 
+  // Fetch cashMovements
+  const cashMovementsQuery = query(collection(db, 'cashMovements'), orderBy('timestamp', 'desc'), limit(50));
+  const [cashMovementsData, cashMovementsLoading] = useCollectionData(cashMovementsQuery);
+
   // Fetch goals (mocking some initial data if empty)
   const goalsQuery = query(collection(db, 'goals'));
   const [goalsData, goalsLoading] = useCollectionData(goalsQuery);
@@ -55,6 +64,7 @@ export default function App() {
   const [sellersSnapshot, sellersLoading] = useCollection(sellersQuery);
 
   const sales = (salesData || []) as Sale[];
+  const cashMovements = (cashMovementsData || []) as CashMovementInterface[];
   const goals = (goalsData || [
     { id: '1', title: 'Monthly Sales Goal', target: 5000, current: 4250, status: 'on-track' }
   ]) as Goal[];
@@ -81,6 +91,16 @@ export default function App() {
       <NewSale 
         onBack={() => setShowNewSale(false)} 
         onSuccess={() => setShowNewSale(false)} 
+      />
+    );
+  }
+
+  if (showCashMovement) {
+    return (
+      <CashMovement 
+        type={cashMovementType}
+        onBack={() => setShowCashMovement(false)}
+        onSuccess={() => setShowCashMovement(false)}
       />
     );
   }
@@ -131,6 +151,17 @@ export default function App() {
     );
   }
 
+  if (selectedPaymentMethod) {
+    return (
+      <PaymentMethodDetail
+        method={selectedPaymentMethod}
+        sales={sales}
+        cashMovements={cashMovements}
+        onBack={() => setSelectedPaymentMethod(null)}
+      />
+    );
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -144,6 +175,7 @@ export default function App() {
               setSelectedSeller(seller);
               setView('performance');
             }}
+            onViewMethodDetail={setSelectedPaymentMethod}
           />
         );
       case 'history':
@@ -175,8 +207,14 @@ export default function App() {
       activeTab={activeTab} 
       onTabChange={setActiveTab} 
       onPlusClick={() => setShowNewSale(true)}
-      onSangriaClick={() => alert('Função Sangria em breve!')}
-      onReforcoClick={() => alert('Função Reforço em breve!')}
+      onSangriaClick={() => {
+        setCashMovementType('sangria');
+        setShowCashMovement(true);
+      }}
+      onReforcoClick={() => {
+        setCashMovementType('reforco');
+        setShowCashMovement(true);
+      }}
     >
       {renderContent()}
     </Layout>

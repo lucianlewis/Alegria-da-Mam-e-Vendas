@@ -60,12 +60,35 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "goal"]
+    },
+    "CashMovement": {
+      "title": "Cash Movement",
+      "description": "A cash bleed (sangria) or reinforcement record",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["sangria", "reforco"] },
+        "amount": { "type": "number" },
+        "observation": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "cashDetails": {
+          "type": "object",
+          "properties": {
+            "bills": { "type": "object" },
+            "coins": { "type": "object" },
+            "total": { "type": "number" }
+          }
+        },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" }
+      },
+      "required": ["type", "amount", "timestamp", "userId"]
     }
   },
   "firestore": {
     "/users/{uid}": { "schema": "User", "description": "User profiles" },
     "/sales/{saleId}": { "schema": "Sale", "description": "Sales records" },
     "/goals/{goalId}": { "schema": "Goal", "description": "Sales goals" },
-    "/sellers/{sellerId}": { "schema": "Seller", "description": "Registered sellers" }
+    "/sellers/{sellerId}": { "schema": "Seller", "description": "Registered sellers" },
+    "/cashMovements/{movementId}": { "schema": "CashMovement", "description": "Cash movements (sangria/reforco)" }
   }
 }

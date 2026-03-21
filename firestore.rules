@@ -95,9 +95,26 @@ service cloud.firestore {
              (!('updatedAt' in data) || data.updatedAt is timestamp);
     }
 
+    function isValidCashMovement(data) {
+      return data.keys().hasAll(['type', 'amount', 'timestamp', 'userId']) &&
+             data.type in ['sangria', 'reforco'] &&
+             data.amount is number && data.amount > 0 &&
+             data.timestamp is timestamp &&
+             data.userId is string &&
+             (!('observation' in data) || data.observation is string) &&
+             (!('cashDetails' in data) || data.cashDetails is map);
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
+
+    match /cashMovements/{movementId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && isValidCashMovement(request.resource.data) && 
+                    (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
