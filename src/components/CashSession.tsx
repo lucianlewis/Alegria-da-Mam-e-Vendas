@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, CheckCircle, Loader2, Banknote, Plus, Minus, AlertCircle, History as HistoryIcon, Lock, Unlock } from 'lucide-react';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
-import { collection, addDoc, serverTimestamp, updateDoc, doc, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, updateDoc, doc, query, where, limit, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { CashSession as CashSessionInterface, Sale, CashMovement } from '../types';
 import { useLanguage, languages } from '../contexts/LanguageContext';
 

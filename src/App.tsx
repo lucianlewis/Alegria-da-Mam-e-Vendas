@@ -16,10 +16,12 @@ import { SellerPerformance } from './components/SellerPerformance';
 import { CashMovement } from './components/CashMovement';
 import { PaymentMethodDetail } from './components/PaymentMethodDetail';
 import { CashSession } from './components/CashSession';
+import { useLanguage } from './contexts/LanguageContext';
 import { Sale, Goal, Seller, CashMovementType, CashMovement as CashMovementInterface, CashSession as CashSessionInterface } from './types';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
+  const { t } = useLanguage();
   const [user, loading, error] = useAuthState(auth);
   const [activeTab, setActiveTab] = useState('home');
   const [showNewSale, setShowNewSale] = useState(false);
@@ -52,6 +54,7 @@ export default function App() {
             displayName: user.displayName,
             photoURL: user.photoURL,
             role: user.email === 'mahteusmachado@gmail.com' ? 'admin' : 'seller',
+            language: localStorage.getItem('app_language') || 'en',
             createdAt: serverTimestamp()
           }).catch(err => console.error("Error creating user doc:", err));
         }
@@ -94,7 +97,7 @@ export default function App() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="animate-spin text-primary" size={48} />
           <p className="text-slate-500 text-sm font-bold animate-pulse">
-            Carregando dados persistentes...
+            {t('loadingData')}
           </p>
         </div>
       </div>

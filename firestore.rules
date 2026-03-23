@@ -10,6 +10,7 @@
 //   - displayName: string (optional)
 //   - photoURL: string (optional)
 //   - role: string (required, enum: ['admin', 'seller'])
+//   - language: string (optional)
 //
 // Collection: sales
 // Document ID: auto-generated
@@ -79,7 +80,8 @@ service cloud.firestore {
       return data.keys().hasAll(['uid', 'email', 'role']) &&
              data.uid == request.auth.uid &&
              isValidEmail(data.email) &&
-             data.role in ['admin', 'seller'];
+             data.role in ['admin', 'seller'] &&
+             (!('language' in data) || (data.language is string && data.language.size() <= 10));
     }
 
     function isValidSale(data) {
@@ -163,7 +165,7 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
                     (request.resource.data.role == 'seller' || isAdmin());
       allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
-                    (request.resource.data.role == resource.data.role || isAdmin());
+                    ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
     }
 
     match /sales/{saleId} {

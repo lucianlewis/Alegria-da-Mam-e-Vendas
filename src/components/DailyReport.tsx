@@ -166,7 +166,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
               <p className="text-xl font-black" style={{ color: colors.text }}>{transactions}</p>
               <div className="flex items-center gap-1 text-[10px] font-bold" style={{ color: colors.success }}>
                 <TrendingUp size={10} />
-                <span>+5% vs {t('yesterday')}</span>
+                <span>+5% {t('vs')} {t('yesterday')}</span>
               </div>
             </div>
             <div className="rounded-2xl p-4 space-y-1 border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
@@ -174,7 +174,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
               <p className="text-xl font-black" style={{ color: colors.text }}>{formatCurrency(averageTicket)}</p>
               <div className="flex items-center gap-1 text-[10px] font-bold" style={{ color: colors.success }}>
                 <TrendingUp size={10} />
-                <span>+7% vs {t('yesterday')}</span>
+                <span>+7% {t('vs')} {t('yesterday')}</span>
               </div>
             </div>
           </div>
@@ -306,7 +306,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
             {t('reportGeneratedAutomatically')}
           </p>
           <p className="text-[9px] font-bold" style={{ color: colors.muted }}>
-            ID {t('ofReport')}: #DR-{format(date, 'yyyyMMdd')}-{transactions}
+            {t('id')} {t('ofReport')}: #DR-{format(date, 'yyyyMMdd')}-{transactions}
           </p>
         </footer>
       </main>

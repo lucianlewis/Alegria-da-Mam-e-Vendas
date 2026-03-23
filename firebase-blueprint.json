@@ -9,7 +9,8 @@
         "email": { "type": "string", "format": "email" },
         "displayName": { "type": "string" },
         "photoURL": { "type": "string", "format": "uri" },
-        "role": { "type": "string", "enum": ["admin", "seller"] }
+        "role": { "type": "string", "enum": ["admin", "seller"] },
+        "language": { "type": "string", "description": "User's preferred language code" }
       },
       "required": ["uid", "email"]
     },

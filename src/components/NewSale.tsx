@@ -345,7 +345,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
+                  placeholder={t('amountPlaceholder')}
                   className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-16 pl-10 pr-4 text-2xl font-black focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                 />
               </div>

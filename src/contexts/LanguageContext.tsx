@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { auth, db, handleFirestoreError, OperationType } from '../firebase';
+import { doc, onSnapshot, updateDoc, getDoc, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export type LanguageCode = 'en' | 'pt-BR' | 'fr' | 'es' | 'de' | 'hi' | 'ru' | 'ja' | 'zh' | 'ko' | 'th';
 
@@ -310,6 +313,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     noOpenSessionFound: 'No open session found to close',
     sessionAlreadyOpen: 'A session is already open',
     sessionDate: 'Session Date',
+    vs: 'vs',
+    id: 'ID',
+    loadingData: 'Loading persistent data...',
+    amountPlaceholder: '0.00',
+    salesHistory: 'Sales History',
   },
   'pt-BR': {
     dashboard: 'Painel',
@@ -506,6 +514,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     noOpenSessionFound: 'Nenhuma sessão aberta encontrada para fechar',
     sessionAlreadyOpen: 'Já existe uma sessão aberta',
     sessionDate: 'Data da Sessão',
+    vs: 'vs',
+    id: 'ID',
+    loadingData: 'Carregando dados persistentes...',
+    amountPlaceholder: '0,00',
+    salesHistory: 'Histórico de Vendas',
   },
   fr: {
     dashboard: 'Tableau de bord',
@@ -628,7 +641,6 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     calculatedCash: 'Espèces calculées',
     summary: 'Résumé',
     dailyReport: 'Rapport Journalier',
-    closing: 'Clôture',
     downloadPDF: 'Télécharger le PDF',
     salesSummary: 'RÉSUMÉ DES VENTES',
     grossSales: 'Ventes Brutes',
@@ -661,6 +673,27 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: 'Copié dans le presse-papier !',
     detail: 'Détail',
     sale: 'Vente',
+    cashSession: 'Session de Caisse',
+    opening: 'Ouverture',
+    closing: 'Clôture',
+    openCash: 'Ouvrir la Caisse',
+    closeCash: 'Fermer la Caisse',
+    openingAmount: 'Montant d\'Ouverture',
+    closingAmount: 'Montant de Fermeture',
+    expected: 'Attendu',
+    difference: 'Différence',
+    confirmOpening: 'Confirmer l\'Ouverture',
+    confirmClosing: 'Confirmer la Fermeture',
+    paymentLink: 'Lien de Paiement',
+    exchangeVoucher: 'Bon d\'Échange',
+    noOpenSessionFound: 'Aucune session ouverte trouvée pour fermer',
+    sessionAlreadyOpen: 'Une session est déjà ouverte',
+    sessionDate: 'Date de la Session',
+    vs: 'vs',
+    id: 'ID',
+    loadingData: 'Chargement des données persistantes...',
+    amountPlaceholder: '0,00',
+    salesHistory: 'Historique des ventes',
   },
   es: {
     dashboard: 'Tablero',
@@ -783,7 +816,6 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     calculatedCash: 'Efectivo Calculado',
     summary: 'Resumen',
     dailyReport: 'Informe Diario',
-    closing: 'Cierre',
     downloadPDF: 'Descargar PDF',
     salesSummary: 'RESUMEN DE VENTAS',
     grossSales: 'Ventas Brutas',
@@ -816,6 +848,27 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: '¡Copiado al portapapeles!',
     detail: 'Detalle',
     sale: 'Venta',
+    cashSession: 'Sesión de Caja',
+    opening: 'Apertura',
+    closing: 'Cierre',
+    openCash: 'Abrir Caja',
+    closeCash: 'Cerrar Caja',
+    openingAmount: 'Monto de Apertura',
+    closingAmount: 'Monto de Cierre',
+    expected: 'Esperado',
+    difference: 'Diferencia',
+    confirmOpening: 'Confirmar Apertura',
+    confirmClosing: 'Confirmar Cierre',
+    paymentLink: 'Enlace de Pago',
+    exchangeVoucher: 'Vale de Canje',
+    noOpenSessionFound: 'No se encontró ninguna sesión abierta para cerrar',
+    sessionAlreadyOpen: 'Ya hay una sesión abierta',
+    sessionDate: 'Fecha de la Sesión',
+    vs: 'vs',
+    id: 'ID',
+    loadingData: 'Cargando datos persistentes...',
+    amountPlaceholder: '0,00',
+    salesHistory: 'Historial de ventas',
   },
   de: {
     dashboard: 'Dashboard',
@@ -982,6 +1035,26 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: 'In die Zwischenablage kopiert!',
     detail: 'Detail',
     sale: 'Verkauf',
+    cashSession: 'Kassensitzung',
+    opening: 'Eröffnung',
+    openCash: 'Kasse öffnen',
+    closeCash: 'Kasse schließen',
+    openingAmount: 'Eröffnungsbetrag',
+    closingAmount: 'Abschlussbetrag',
+    expected: 'Erwartet',
+    difference: 'Differenz',
+    confirmOpening: 'Eröffnung bestätigen',
+    confirmClosing: 'Abschluss bestätigen',
+    paymentLink: 'Zahlungslink',
+    exchangeVoucher: 'Umtauschbeleg',
+    noOpenSessionFound: 'Keine offene Sitzung zum Schließen gefunden',
+    sessionAlreadyOpen: 'Eine Sitzung ist bereits offen',
+    sessionDate: 'Sitzungsdatum',
+    vs: 'vs',
+    id: 'ID',
+    loadingData: 'Lade persistente Daten...',
+    amountPlaceholder: '0,00',
+    salesHistory: 'Verkaufsverlauf',
   },
   hi: {
     dashboard: 'डैशबोर्ड',
@@ -1148,6 +1221,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: 'क्लिपबोर्ड पर कॉपी किया गया!',
     detail: 'विवरण',
     sale: 'बिक्री',
+    vs: 'बनाम',
+    id: 'आईडी',
+    loadingData: 'डेटा लोड हो रहा है...',
+    amountPlaceholder: '0.00',
+    salesHistory: 'बिक्री इतिहास',
   },
   ru: {
     dashboard: 'Панель',
@@ -1314,6 +1392,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: 'Скопировано в буфер обмена!',
     detail: 'Детали',
     sale: 'Продажа',
+    vs: 'против',
+    id: 'ID',
+    loadingData: 'Загрузка данных...',
+    amountPlaceholder: '0.00',
+    salesHistory: 'История продаж',
   },
   ja: {
     dashboard: 'ダッシュボード',
@@ -1480,6 +1563,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: 'クリップボードにコピーされました！',
     detail: '詳細',
     sale: '販売',
+    vs: '対',
+    id: 'ID',
+    loadingData: 'データを読み込んでいます...',
+    amountPlaceholder: '0.00',
+    salesHistory: '販売履歴',
   },
   zh: {
     dashboard: '仪表板',
@@ -1646,6 +1734,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: '已复制到剪贴板！',
     detail: '详情',
     sale: '销售',
+    vs: '对比',
+    id: 'ID',
+    loadingData: '正在加载数据...',
+    amountPlaceholder: '0.00',
+    salesHistory: '销售历史',
   },
   ko: {
     dashboard: '대시보드',
@@ -1812,6 +1905,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: '클립보드에 복사되었습니다!',
     detail: '상세',
     sale: '판매',
+    vs: '대',
+    id: 'ID',
+    loadingData: '데이터를 불러오는 중...',
+    amountPlaceholder: '0.00',
+    salesHistory: '판매 내역',
   },
   th: {
     dashboard: 'แดชบอร์ด',
@@ -1978,6 +2076,11 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     copiedToClipboard: 'คัดลอกไปยังคลิปบอร์ดแล้ว!',
     detail: 'รายละเอียด',
     sale: 'การขาย',
+    vs: 'เทียบกับ',
+    id: 'ID',
+    loadingData: 'กำลังโหลดข้อมูล...',
+    amountPlaceholder: '0.00',
+    salesHistory: 'ประวัติการขาย',
   },
 };
 
@@ -1998,9 +2101,57 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     return (saved as LanguageCode) || 'en';
   });
 
-  const setLanguage = (code: LanguageCode) => {
+  // Sync with Firestore
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        const unsubDoc = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.language && data.language !== language) {
+              setLanguageState(data.language as LanguageCode);
+              localStorage.setItem('app_language', data.language);
+            }
+          }
+        }, (err) => {
+          // Silent fail for permissions on initial load
+          if (err.code !== 'permission-denied') {
+            console.error("Firestore language sync error:", err);
+          }
+        });
+        return () => unsubDoc();
+      }
+    });
+    return () => unsubscribe();
+  }, [language]);
+
+  const setLanguage = async (code: LanguageCode) => {
     setLanguageState(code);
     localStorage.setItem('app_language', code);
+    
+    if (auth.currentUser) {
+      try {
+        const userRef = doc(db, 'users', auth.currentUser.uid);
+        const docSnap = await getDoc(userRef);
+        if (docSnap.exists()) {
+          await updateDoc(userRef, { language: code });
+        } else {
+          // If doc doesn't exist, create it (App.tsx also does this, but redundancy is safe here)
+          await setDoc(userRef, {
+            uid: auth.currentUser.uid,
+            email: auth.currentUser.email,
+            displayName: auth.currentUser.displayName,
+            photoURL: auth.currentUser.photoURL,
+            role: auth.currentUser.email === 'mahteusmachado@gmail.com' ? 'admin' : 'seller',
+            language: code,
+          });
+        }
+      } catch (err) {
+        // Log error but don't block UI
+        console.error("Error saving language to Firestore:", err);
+      }
+    }
   };
 
   const t = (key: string): string => {
