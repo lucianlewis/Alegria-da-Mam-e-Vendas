@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Banknote, CreditCard, Smartphone, QrCode, TrendingUp, TrendingDown, Info } from 'lucide-react';
+import { ArrowLeft, Banknote, CreditCard, Smartphone, QrCode, TrendingUp, TrendingDown, Info, FileText } from 'lucide-react';
 import { Sale, CashMovement, PaymentMethod } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface PaymentMethodDetailProps {
   method: string;
@@ -11,11 +13,8 @@ interface PaymentMethodDetailProps {
   onBack: () => void;
 }
 
-const BILL_VALUES = [200, 100, 50, 20, 10, 5, 2];
-const COIN_VALUES = [1, 0.50, 0.25, 0.10, 0.05];
-
 export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method, sales, cashMovements, onBack }) => {
-  const { t, formatCurrency } = useLanguage();
+  const { t, formatCurrency, bills: availableBills, coins: availableCoins } = useLanguage();
 
   const methodIcons = {
     cash: Banknote,
@@ -84,6 +83,91 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
 
   const { bills, coins } = aggregateCash();
 
+  const handlePrint = async () => {
+    const date = new Date().toLocaleDateString();
+    const total = formatCurrency(totalSales);
+    
+    let cashBreakdownHtml = '';
+    if (method === 'cash') {
+      cashBreakdownHtml = `
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #ff0080;">
+          <h2 style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ff0080; margin-bottom: 16px;">${t('cashBreakdown')}</h2>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-weight: 600; color: #64748b; font-size: 12px;">${t('totalSalesByMethod')}:</span>
+            <span style="font-weight: 800; color: #1a1a1a; font-size: 12px;">${formatCurrency(totalSales)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-weight: 600; color: #64748b; font-size: 12px;">${t('totalSangrias')}:</span>
+            <span style="font-weight: 800; color: #ef4444; font-size: 12px;">-${formatCurrency(totalSangrias)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-weight: 600; color: #64748b; font-size: 12px;">${t('totalReforcos')}:</span>
+            <span style="font-weight: 800; color: #10b981; font-size: 12px;">+${formatCurrency(totalReforcos)}</span>
+          </div>
+          <div style="background: #ff0080; color: white; padding: 12px; border-radius: 12px; text-align: right; font-weight: 900; font-size: 14px;">
+            ${t('calculatedCash')}: ${formatCurrency(netCash)}
+          </div>
+        </div>
+      `;
+    }
+
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.width = '400px';
+    container.style.padding = '40px';
+    container.style.backgroundColor = '#ffffff';
+    container.style.fontFamily = "'Inter', sans-serif";
+
+    container.innerHTML = `
+      <div style="text-align: center; margin-bottom: 40px;">
+        <div style="width: 48px; height: 48px; background-color: #ff0080; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;"></div>
+        <div style="font-weight: 900; font-size: 24px; letter-spacing: -1px; color: #ff0080;">PipBase</div>
+      </div>
+      
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; padding: 24px; margin-bottom: 24px;">
+        <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 4px;">${t(method)} - ${t('paymentMethodDetail')}</div>
+        <div style="font-size: 18px; font-weight: 800; color: #1a1a1a; margin-bottom: 24px;">${date}</div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
+          <span style="font-weight: 600; color: #64748b; font-size: 14px;">${t('totalSales')}:</span>
+          <span style="font-weight: 800; color: #1a1a1a; font-size: 14px;">${total}</span>
+        </div>
+        ${cashBreakdownHtml}
+      </div>
+
+      <div style="text-align: center; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 40px; text-transform: uppercase; letter-spacing: 1px;">
+        ${new Date().toLocaleString()} • PipBase App
+      </div>
+    `;
+
+    document.body.appendChild(container);
+
+    try {
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width / 2, canvas.height / 2]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save(`pipbase-${t('detail').toLowerCase()}-${method}-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      document.body.removeChild(container);
+    }
+  };
+;
+
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] flex flex-col transition-colors duration-300">
       <header className="sticky top-0 z-10 flex items-center bg-[var(--bg-color)] p-4 border-b border-[var(--border-color)]">
@@ -91,6 +175,12 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-xl font-bold flex-1 ml-2">{t(method)} - {t('paymentMethodDetail')}</h1>
+        <button 
+          onClick={handlePrint}
+          className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full"
+        >
+          <FileText size={24} />
+        </button>
       </header>
 
       <main className="flex-1 overflow-y-auto p-4 space-y-6 pb-20">
@@ -139,7 +229,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('bills')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
-                {BILL_VALUES.map(val => {
+                {availableBills.map(val => {
                   const qty = bills[val.toString()] || 0;
                   return (
                     <div key={val} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
@@ -162,7 +252,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('coins')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
-                {COIN_VALUES.map(val => {
+                {availableCoins.map(val => {
                   const qty = coins[val.toString()] || 0;
                   return (
                     <div key={val} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">

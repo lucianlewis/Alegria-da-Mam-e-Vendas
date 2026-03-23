@@ -6,9 +6,6 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { CashMovementType } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const BILL_VALUES = [200, 100, 50, 20, 10, 5, 2];
-const COIN_VALUES = [1, 0.50, 0.25, 0.10, 0.05];
-
 interface CashMovementProps {
   type: CashMovementType;
   onBack: () => void;
@@ -16,7 +13,7 @@ interface CashMovementProps {
 }
 
 export const CashMovement: React.FC<CashMovementProps> = ({ type, onBack, onSuccess }) => {
-  const { t, formatCurrency } = useLanguage();
+  const { t, formatCurrency, bills, coins } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState<string>('');
   const [observation, setObservation] = useState<string>('');
@@ -72,7 +69,7 @@ export const CashMovement: React.FC<CashMovementProps> = ({ type, onBack, onSucc
           total: parseFloat(amount)
         },
         userId: auth.currentUser?.uid || 'unknown',
-        userName: auth.currentUser?.displayName || 'Unknown'
+        userName: auth.currentUser?.displayName || t('unknown')
       };
 
       await addDoc(collection(db, 'cashMovements'), movementData);
@@ -126,7 +123,7 @@ export const CashMovement: React.FC<CashMovementProps> = ({ type, onBack, onSucc
             </div>
             <div className="grid grid-cols-1 gap-3">
               <p className="text-[10px] font-bold text-slate-500 uppercase px-2">{t('bills')}</p>
-              {BILL_VALUES.map(val => (
+              {bills.map(val => (
                 <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
                   <span className="text-sm font-bold">{formatCurrency(val)}</span>
                   <div className="flex items-center gap-4">
@@ -148,7 +145,7 @@ export const CashMovement: React.FC<CashMovementProps> = ({ type, onBack, onSucc
               ))}
 
               <p className="text-[10px] font-bold text-slate-500 uppercase px-2 mt-2">{t('coins')}</p>
-              {COIN_VALUES.map(val => (
+              {coins.map(val => (
                 <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
                   <span className="text-sm font-bold">{formatCurrency(val)}</span>
                   <div className="flex items-center gap-4">

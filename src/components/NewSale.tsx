@@ -7,23 +7,20 @@ import { analyzeReceipt, generateSalesMotivationImage } from '../services/gemini
 import { PaymentMethod, SaleSource, Seller } from '../types';
 import { useLanguage, languages } from '../contexts/LanguageContext';
 
-const BILL_VALUES = [200, 100, 50, 20, 10, 5, 2];
-const COIN_VALUES = [1, 0.50, 0.25, 0.10, 0.05];
-
 interface NewSaleProps {
   onBack: () => void;
   onSuccess: () => void;
 }
 
 export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
-  const { t, formatCurrency, language } = useLanguage();
+  const { t, formatCurrency, language, bills, coins } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [amount, setAmount] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [source, setSource] = useState<SaleSource>('physical-store');
   const [sellerId, setSellerId] = useState<string>(auth.currentUser?.uid || '');
-  const [sellerName, setSellerName] = useState<string>(auth.currentUser?.displayName || 'Unknown');
+  const [sellerName, setSellerName] = useState<string>(auth.currentUser?.displayName || t('unknown'));
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [billQuantities, setBillQuantities] = useState<Record<number, number>>({});
   const [coinQuantities, setCoinQuantities] = useState<Record<number, number>>({});
@@ -220,8 +217,8 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: 'physical-store', label: t('physicalStore'), icon: Store },
-                  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
-                  { id: 'instagram', label: 'Instagram', icon: Instagram },
+                  { id: 'whatsapp', label: t('whatsapp'), icon: MessageCircle },
+                  { id: 'instagram', label: t('instagram'), icon: Instagram },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -276,7 +273,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                     </div>
                     <div className="grid grid-cols-1 gap-3">
                       <p className="text-[10px] font-bold text-slate-500 uppercase px-2">{t('bills')}</p>
-                      {BILL_VALUES.map(val => (
+                      {bills.map(val => (
                         <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
                           <span className="text-sm font-bold">{formatCurrency(val)}</span>
                           <div className="flex items-center gap-4">
@@ -298,7 +295,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                       ))}
 
                       <p className="text-[10px] font-bold text-slate-500 uppercase px-2 mt-2">{t('coins')}</p>
-                      {COIN_VALUES.map(val => (
+                      {coins.map(val => (
                         <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
                           <span className="text-sm font-bold">{formatCurrency(val)}</span>
                           <div className="flex items-center gap-4">
@@ -356,7 +353,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             className="space-y-2"
           >
             <h3 className="text-xs font-bold text-primary uppercase tracking-widest">{t('achievementUnlocked')}</h3>
-            <img src={motivationImage} className="w-full rounded-2xl shadow-2xl border border-white/10" alt="Motivational" />
+            <img src={motivationImage} className="w-full rounded-2xl shadow-2xl border border-white/10" alt={t('motivationalImage')} />
           </motion.div>
         )}
       </main>

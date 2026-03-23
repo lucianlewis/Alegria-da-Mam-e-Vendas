@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, User, TrendingUp, Calendar, Clock, Trash2, Eye, Printer, Share2, X, Loader2, Banknote, CreditCard, Smartphone, QrCode, Store, MessageCircle, Instagram } from 'lucide-react';
+import { ArrowLeft, User, TrendingUp, Calendar, Clock, Trash2, Eye, Share2, X, Loader2, Banknote, CreditCard, Smartphone, QrCode, Store, MessageCircle, Instagram, FileText } from 'lucide-react';
 import { Seller, Sale } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../firebase';
 import { collection, query, where, orderBy, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface SellerPerformanceProps {
   seller: Seller;
@@ -51,6 +53,115 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
       console.error("Error deleting sale:", error);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handlePrint = async (sale: Sale) => {
+    const date = sale.timestamp ? format(sale.timestamp.toDate(), 'PPP HH:mm:ss', { locale: currentLocale }) : '--';
+    const amount = formatCurrency(sale.amount);
+    const sellerName = seller.name;
+    const method = t(sale.paymentMethod);
+    const source = t(sale.source.replace('-', ' '));
+
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.width = '400px';
+    container.style.padding = '40px';
+    container.style.backgroundColor = '#ffffff';
+    container.style.fontFamily = "'Inter', sans-serif";
+
+    container.innerHTML = `
+      <div style="text-align: center; margin-bottom: 40px;">
+        <div style="width: 48px; height: 48px; background-color: #ff0080; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;"></div>
+        <div style="font-weight: 900; font-size: 24px; letter-spacing: -1px; color: #ff0080;">PipBase</div>
+      </div>
+      
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; padding: 24px; margin-bottom: 24px;">
+        <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">${t('viewSale')}</div>
+        <div style="font-size: 36px; font-weight: 900; color: #ff0080; margin-bottom: 24px;">${amount}</div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
+            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('seller')}</div>
+            <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${sellerName}</div>
+          </div>
+          <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
+            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('day')}</div>
+            <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${date.split(' ')[0]} ${date.split(' ')[1]}</div>
+          </div>
+          <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
+            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('paymentMethod')}</div>
+            <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${method}</div>
+          </div>
+          <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
+            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('saleSource')}</div>
+            <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${source}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 40px; text-transform: uppercase; letter-spacing: 1px;">
+        ${new Date().toLocaleString()} • PipBase
+      </div>
+    `;
+
+    document.body.appendChild(container);
+
+    try {
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width / 2, canvas.height / 2]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save(`pipbase-${t('sale').toLowerCase()}-${sale.id}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      document.body.removeChild(container);
+    }
+  };
+;
+
+  const handleShare = async (sale: Sale) => {
+    const date = sale.timestamp ? format(sale.timestamp.toDate(), 'dd/MM/yyyy HH:mm', { locale: currentLocale }) : '--';
+    const amount = formatCurrency(sale.amount);
+    const text = `*${t('saleDetails')}*\n\n` +
+                 `*${t('seller')}:* ${seller.name}\n` +
+                 `*${t('amount')}:* ${amount}\n` +
+                 `*${t('paymentMethod')}:* ${t(sale.paymentMethod)}\n` +
+                 `*${t('saleSource')}:* ${t(sale.source.replace('-', ' '))}\n` +
+                 `*${t('day')}:* ${date}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: t('saleDetails'),
+          text: text,
+        });
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error("Error sharing:", error);
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(text);
+        alert(t('copiedToClipboard'));
+      } catch (error) {
+        console.error("Error copying to clipboard:", error);
+      }
     }
   };
 
@@ -239,46 +350,52 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                 <header className="flex items-center justify-between">
                   <h3 className="text-lg font-bold">{t('viewSale')}</h3>
                   <div className="flex items-center gap-2">
-                    <button className="size-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
-                      <Printer size={18} />
+                    <button 
+                      onClick={() => handlePrint(selectedSale)}
+                      className="size-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                    >
+                      <FileText size={18} />
                     </button>
-                    <button className="size-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <button 
+                      onClick={() => handleShare(selectedSale)}
+                      className="size-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                    >
                       <Share2 size={18} />
                     </button>
                     <button 
                       onClick={() => setSelectedSale(null)}
-                      className="size-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+                      className="size-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                     >
                       <X size={18} />
                     </button>
                   </div>
                 </header>
 
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl">
+                  <div className="space-y-4">
+                  <div className="flex justify-between items-center p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)]">
                     <span className="text-xs font-bold text-slate-500 uppercase">{t('amount')}</span>
                     <span className="text-xl font-black text-primary">{formatCurrency(selectedSale.amount)}</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-white/5 rounded-2xl space-y-1">
+                    <div className="p-3 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] space-y-1">
                       <p className="text-[10px] font-bold text-slate-500 uppercase">{t('paymentMethod')}</p>
                       <div className="flex items-center gap-2">
                         {React.createElement(getMethodIcon(selectedSale.paymentMethod), { size: 14, className: "text-primary" })}
-                        <span className="text-xs font-bold capitalize">{selectedSale.paymentMethod}</span>
+                        <span className="text-xs font-bold capitalize">{t(selectedSale.paymentMethod)}</span>
                       </div>
                     </div>
-                    <div className="p-3 bg-white/5 rounded-2xl space-y-1">
+                    <div className="p-3 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] space-y-1">
                       <p className="text-[10px] font-bold text-slate-500 uppercase">{t('saleSource')}</p>
                       <div className="flex items-center gap-2">
                         {React.createElement(getSourceIcon(selectedSale.source), { size: 14, className: "text-primary" })}
-                        <span className="text-xs font-bold capitalize">{selectedSale.source.replace('-', ' ')}</span>
+                        <span className="text-xs font-bold capitalize">{t(selectedSale.source.replace('-', ' '))}</span>
                       </div>
                     </div>
                   </div>
 
                   {selectedSale.cashDetails && (
-                    <div className="p-4 bg-white/5 rounded-2xl space-y-3">
+                    <div className="p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] space-y-3">
                       <p className="text-[10px] font-bold text-slate-500 uppercase">{t('cashBreakdown')}</p>
                       
                       {selectedSale.cashDetails.bills && Object.keys(selectedSale.cashDetails.bills).length > 0 && (
@@ -288,7 +405,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                             {Object.entries(selectedSale.cashDetails.bills)
                               .sort((a, b) => Number(b[0]) - Number(a[0]))
                               .map(([val, qty]) => (
-                                <div key={val} className="flex justify-between text-[11px] bg-white/5 p-2 rounded-lg">
+                                <div key={val} className="flex justify-between text-[11px] bg-slate-100 dark:bg-white/10 p-2 rounded-lg">
                                   <span>{formatCurrency(Number(val))}</span>
                                   <span className="font-bold">x{qty}</span>
                                 </div>
@@ -304,7 +421,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                             {Object.entries(selectedSale.cashDetails.coins)
                               .sort((a, b) => Number(b[0]) - Number(a[0]))
                               .map(([val, qty]) => (
-                                <div key={val} className="flex justify-between text-[11px] bg-white/5 p-2 rounded-lg">
+                                <div key={val} className="flex justify-between text-[11px] bg-slate-100 dark:bg-white/10 p-2 rounded-lg">
                                   <span>{formatCurrency(Number(val))}</span>
                                   <span className="font-bold">x{qty}</span>
                                 </div>

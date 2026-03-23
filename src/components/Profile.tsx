@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, LogOut, Shield, Globe, Lock, FileText, Trash2, ChevronRight, Moon, Check, TrendingUp } from 'lucide-react';
-import { auth, logout } from '../firebase';
+import { auth, logout, db } from '../firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { useLanguage, languages, LanguageCode } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -15,6 +16,14 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [sellersCount, setSellersCount] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'sellers'), (snapshot) => {
+      setSellersCount(snapshot.size);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const currentLanguage = languages.find(l => l.code === language) || languages[0];
 
@@ -22,9 +31,8 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
     {
       title: t('management'),
       items: [
-        { icon: TrendingUp, label: t('sellerPerformance'), sub: t('performance'), onClick: onViewPerformance },
         { icon: Globe, label: t('stores'), sub: `${t('manageRetail')} (12)` },
-        { icon: Shield, label: t('sellers'), sub: `${t('staffPermissions')} (48)`, onClick: onNavigateSellers },
+        { icon: Shield, label: t('sellers'), sub: `${t('staffPermissions')} (${sellersCount})`, onClick: onNavigateSellers },
       ]
     },
     {
@@ -60,7 +68,7 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
             <img 
               src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
               className="w-full h-full object-cover" 
-              alt="Profile" 
+              alt={t('profileImage')} 
             />
           </div>
           <div className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-4 border-background-dark flex items-center justify-center">
@@ -69,7 +77,7 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
         </div>
 
         <div className="text-center space-y-1">
-          <h3 className="text-2xl font-black tracking-tight">{user?.displayName || 'User'}</h3>
+          <h3 className="text-2xl font-black tracking-tight">{user?.displayName || t('user')}</h3>
           <p className="text-primary font-bold text-sm">@{user?.email?.split('@')[0]}</p>
           <p className="text-slate-500 text-xs">{user?.email}</p>
         </div>

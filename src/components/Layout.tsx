@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Home, ReceiptText, History, User, Plus } from 'lucide-react';
+import { Home, ReceiptText, History, Plus, TrendingDown, TrendingUp } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { AnimatePresence } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { auth } from '../firebase';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -34,22 +35,23 @@ export const Layout: React.FC<LayoutProps> = ({
     { id: 'home', icon: Home, label: t('dashboard') },
     { id: 'entries', icon: ReceiptText, label: t('entries') },
     { id: 'history', icon: History, label: t('history') },
-    { id: 'profile', icon: User, label: t('profile') },
+    { id: 'profile', icon: null, label: t('profile') },
   ];
 
   const menuOptions = [
-    { label: 'Releases', action: onPlusClick },
-    { label: 'Bleed', action: onSangriaClick },
-    { label: 'Reinforcements', action: onReforcoClick },
+    { icon: ReceiptText, action: onPlusClick, angle: 210 },
+    { icon: TrendingDown, action: onSangriaClick, angle: 270 },
+    { icon: TrendingUp, action: onReforcoClick, angle: 330 },
   ];
 
+  const radius = 53.5;
+
   // SVG Paths for the circular notch animation
-  // notchedPath: A smooth circular dip in the center (Estado 1)
-  // flatPath: A straight line across the top (Estado 3)
-  // Both paths have the same structure for smooth morphing.
-  // Center is 200. Button radius is 32. Notch radius is 35 (3px gap).
-  const notchedPath = "M0,0 H140 C165,0 175,35 200,35 C225,35 235,0 260,0 H400 V54 H0 Z";
-  const flatPath = "M0,0 H140 C165,0 175,0 200,0 C225,0 235,0 260,0 H400 V54 H0 Z";
+  // Centered in a 1000-unit viewBox to maintain consistent shape with preserveAspectRatio="xMidYMin slice"
+  // Center is 500. Button size is 56px (size-14). Radius is 28.
+  // Notch depth is 32 (4px gap from button center). Notch width is 130.
+  const notchedPath = "M0,0 H435 C460,0 475,32 500,32 C525,32 540,0 565,0 H1000 V54 H0 Z";
+  const flatPath = "M0,0 H435 C460,0 475,0 500,0 C525,0 540,0 565,0 H1000 V54 H0 Z";
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] flex flex-col max-w-md mx-auto border-x border-black/5 dark:border-white/5 relative overflow-hidden transition-colors duration-300">
@@ -68,10 +70,10 @@ export const Layout: React.FC<LayoutProps> = ({
         {/* The Navigation Bar Background with Animated Notch */}
         <div className="absolute bottom-0 w-full h-[54px] pointer-events-auto">
           <svg 
-            viewBox="0 0 400 54" 
+            viewBox="0 0 1000 54" 
             className="absolute inset-0 w-full h-full drop-shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
             style={{ fill: 'var(--nav-bg)' }}
-            preserveAspectRatio="none"
+            preserveAspectRatio="xMidYMin slice"
           >
             <motion.path 
               d={isMenuOpen ? flatPath : notchedPath}
@@ -96,7 +98,20 @@ export const Layout: React.FC<LayoutProps> = ({
                     activeTab === tab.id ? "text-primary" : "text-[var(--nav-icon-unselected)]"
                   )}
                 >
-                  <tab.icon size={22} />
+                  {tab.id === 'profile' ? (
+                    <div className={cn(
+                      "size-[22px] rounded-full overflow-hidden border-2 transition-all",
+                      activeTab === 'profile' ? "border-primary" : "border-transparent opacity-70"
+                    )}>
+                      <img 
+                        src={auth.currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.currentUser?.uid}`} 
+                        className="w-full h-full object-cover" 
+                        alt={t('profileImage')} 
+                      />
+                    </div>
+                  ) : (
+                    tab.icon && <tab.icon size={22} />
+                  )}
                   <span className="text-[10px] font-bold uppercase tracking-tighter leading-none">{tab.label}</span>
                 </button>
               ))}
@@ -112,7 +127,20 @@ export const Layout: React.FC<LayoutProps> = ({
                     activeTab === tab.id ? "text-primary" : "text-[var(--nav-icon-unselected)]"
                   )}
                 >
-                  <tab.icon size={22} />
+                  {tab.id === 'profile' ? (
+                    <div className={cn(
+                      "size-[22px] rounded-full overflow-hidden border-2 transition-all",
+                      activeTab === 'profile' ? "border-primary" : "border-transparent opacity-70"
+                    )}>
+                      <img 
+                        src={auth.currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.currentUser?.uid}`} 
+                        className="w-full h-full object-cover" 
+                        alt={t('profileImage')} 
+                      />
+                    </div>
+                  ) : (
+                    tab.icon && <tab.icon size={22} />
+                  )}
                   <span className="text-[10px] font-bold uppercase tracking-tighter leading-none">{tab.label}</span>
                 </button>
               ))}
@@ -124,27 +152,39 @@ export const Layout: React.FC<LayoutProps> = ({
         <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-auto flex flex-col items-center">
           <AnimatePresence>
             {isMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 0, scale: 0.9 }}
-                animate={{ opacity: 1, y: -180, scale: 1 }}
-                exit={{ opacity: 0, y: 0, scale: 0.9 }}
-                className="absolute bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-2 min-w-[180px] border border-black/5 dark:border-white/10 z-40"
-              >
-                <div className="flex flex-col gap-1">
-                  {menuOptions.map((option) => (
-                    <button
-                      key={option.label}
+              <div className="absolute z-40 flex flex-col items-center">
+                {menuOptions.map((option, idx) => {
+                  const x = radius * Math.cos((option.angle * Math.PI) / 180);
+                  const y = radius * Math.sin((option.angle * Math.PI) / 180);
+                  
+                  return (
+                    <motion.button
+                      key={idx}
+                      initial={{ opacity: 0, x: 0, y: 0, scale: 0.5 }}
+                      animate={{ 
+                        opacity: 1, 
+                        x,
+                        y: y - 2, // Aligning with the main button's open position
+                        scale: 1 
+                      }}
+                      exit={{ opacity: 0, x: 0, y: 0, scale: 0.5 }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 260, 
+                        damping: 20,
+                        delay: idx * 0.05
+                      }}
                       onClick={() => {
                         option.action();
                         setIsMenuOpen(false);
                       }}
-                      className="px-4 py-3 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200 hover:bg-primary/10 hover:text-primary rounded-xl transition-colors text-center"
+                      className="absolute size-[39px] rounded-full bg-primary flex items-center justify-center text-white shadow-lg active:scale-90 transition-transform"
                     >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
+                      <option.icon size={20} strokeWidth={2.5} />
+                    </motion.button>
+                  );
+                })}
+              </div>
             )}
           </AnimatePresence>
 
@@ -152,20 +192,20 @@ export const Layout: React.FC<LayoutProps> = ({
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             initial={false}
             animate={{ 
-              // Nav height 112px (h-28). Bar height 54px. Bar top is at 58px.
-              // Button center is 32px. To reach 58px, y must be 26.
-              // Current travel was 86px (from 26 to -60). 
-              // Half travel is 43px. New target: 26 - 43 = -17.
-              // Adjusted for 6dp gap: y: 23 (from 26). New open target: 23 - 43 = -20.
-              y: isMenuOpen ? -20 : 23, 
+              // Center of button (radius 28) should align with bar top (58px from nav top).
+              // Original center is at 28. Translation of 30px puts center at 58px.
+              // When elevated, we want a 4dp gap from the bar top (58px).
+              // Bar top is at 58px. Button bottom should be at 58 - 4 = 54px.
+              // Button height is 56px. Top should be at 54 - 56 = -2px.
+              y: isMenuOpen ? -2 : 30, 
             }}
             transition={{ type: "spring", stiffness: 180, damping: 28 }}
             className={cn(
-              "size-16 bg-primary rounded-full flex items-center justify-center text-white shadow-xl active:scale-95 z-50",
+              "size-14 bg-primary rounded-full flex items-center justify-center text-white shadow-xl active:scale-95 z-50",
               isMenuOpen && "shadow-primary/40"
             )}
           >
-            <Plus size={32} strokeWidth={3} />
+            <Plus size={28} strokeWidth={3} />
           </motion.button>
         </div>
       </nav>

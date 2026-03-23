@@ -161,7 +161,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
           <div className="relative">
             <div className="size-40 rounded-full bg-[var(--card-bg)] border-4 border-[var(--border-color)] overflow-hidden flex items-center justify-center">
               {photoURL ? (
-                <img src={photoURL} className="w-full h-full object-cover" alt="Preview" />
+                <img src={photoURL} className="w-full h-full object-cover" alt={t('preview')} />
               ) : (
                 <User size={64} className="text-slate-600" />
               )}
@@ -207,12 +207,12 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">Email</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('email')}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="vendedor@exemplo.com"
+              placeholder={t('emailPlaceholder')}
               className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
             />
           </div>
@@ -225,7 +225,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
                 type="number"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
-                placeholder="5000"
+                placeholder={t('goalPlaceholder')}
                 className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-10 pr-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               />
             </div>

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Share2, Download, Printer, ChevronDown, Trash2, Calendar, Clock, User, CreditCard, Banknote, Smartphone, QrCode, Store, MessageCircle, Instagram, AlertCircle, Loader2 } from 'lucide-react';
-import { Sale } from '../types';
-import { format } from 'date-fns';
+import { Share2, Download, ChevronDown, Trash2, Calendar, Clock, User, CreditCard, Banknote, Smartphone, QrCode, Store, MessageCircle, Instagram, AlertCircle, Loader2, FileText } from 'lucide-react';
+import { Sale, CashMovement, Goal } from '../types';
+import { format, isSameDay } from 'date-fns';
 import { enUS, ptBR, fr, es, de, hi, ru, ja, zhCN, ko, th } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+import { DailyReport } from './DailyReport';
 
 const locales: Record<string, any> = {
   'en': enUS,
@@ -24,13 +27,16 @@ const locales: Record<string, any> = {
 
 interface HistoryProps {
   sales: Sale[];
+  cashMovements: CashMovement[];
+  goals: Goal[];
 }
 
-export const History: React.FC<HistoryProps> = ({ sales }) => {
+export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals }) => {
   const { t, formatCurrency, language } = useLanguage();
   const currentLocale = locales[language] || enUS;
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState<string | null>(null);
+  const [selectedSummary, setSelectedSummary] = useState<any | null>(null);
   
   const getMethodIcon = (method: string) => {
     switch (method) {
@@ -61,6 +67,40 @@ export const History: React.FC<HistoryProps> = ({ sales }) => {
 
   const sortedSummaries = Object.values(dailySummaries).sort((a, b) => b.date.getTime() - a.date.getTime());
 
+  const handleShare = async (summary: any) => {
+    const date = format(summary.date, 'EEEE, dd MMMM yyyy', { locale: currentLocale });
+    const total = formatCurrency(summary.total);
+    
+    let methodsText = '';
+    Object.entries(summary.methods).forEach(([method, amount]) => {
+      if (amount as number > 0) {
+        methodsText += `\n- ${t(method)}: ${formatCurrency(amount as number)}`;
+      }
+    });
+
+    const shareText = `*${t('summary')} - ${date}*\n${methodsText}\n\n*${t('grandTotal')}: ${total}*`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${t('summary')} - ${date}`,
+          text: shareText,
+        });
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error);
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        alert(t('share') + ' (Clipboard)');
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+      }
+    }
+  };
+
   return (
     <div className="p-4 space-y-6 pb-24">
       <header className="flex flex-col gap-4">
@@ -70,6 +110,18 @@ export const History: React.FC<HistoryProps> = ({ sales }) => {
       </header>
 
       <div className="space-y-6">
+        <AnimatePresence>
+          {selectedSummary && (
+            <DailyReport 
+              date={selectedSummary.date}
+              sales={sales.filter(s => isSameDay(s.timestamp?.toDate() || new Date(), selectedSummary.date))}
+              cashMovements={cashMovements.filter(m => isSameDay(m.timestamp?.toDate() || new Date(), selectedSummary.date))}
+              goal={goals[0]} // Using first goal as default
+              onBack={() => setSelectedSummary(null)}
+            />
+          )}
+        </AnimatePresence>
+
         {sortedSummaries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500 space-y-4">
             <AlertCircle size={48} className="opacity-20" />
@@ -81,7 +133,8 @@ export const History: React.FC<HistoryProps> = ({ sales }) => {
               key={summary.date.toISOString()} 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[var(--card-bg)] rounded-3xl p-6 border border-[var(--border-color)] space-y-6 shadow-lg"
+              onClick={() => setSelectedSummary(summary)}
+              className="bg-[var(--card-bg)] rounded-3xl p-6 border border-[var(--border-color)] space-y-6 shadow-lg cursor-pointer active:scale-[0.98] transition-all"
             >
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
@@ -116,10 +169,25 @@ export const History: React.FC<HistoryProps> = ({ sales }) => {
                 })}
               </div>
 
-              <button className="w-full py-3 rounded-xl border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2">
-                <Download size={14} />
-                {t('print')} {t('cashBreakdown')}
-              </button>
+              <div className="flex gap-3">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedSummary(summary);
+                  }}
+                  className="flex-1 py-3 rounded-xl border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FileText size={14} />
+                  {t('pdf')}
+                </button>
+                <button 
+                  onClick={() => handleShare(summary)}
+                  className="flex-1 py-3 rounded-xl border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Share2 size={14} />
+                  {t('share')}
+                </button>
+              </div>
             </motion.div>
           ))
         )}

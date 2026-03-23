@@ -179,7 +179,7 @@ export default function App() {
           />
         );
       case 'history':
-        return <History sales={sales} />;
+        return <History sales={sales} cashMovements={cashMovements} goals={goals} />;
       case 'profile':
         return (
           <Profile 

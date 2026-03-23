@@ -7,14 +7,49 @@
   --color-background-dark: #212121;
   --color-background-light: #ffffff;
   --color-card-dark: #313131;
+
+  /* Explicitly define colors in hex to avoid oklch parsing issues in html2canvas */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+
+  --color-rose-50: #fff1f2;
+  --color-rose-100: #ffe4e6;
+  --color-rose-200: #fecdd3;
+  --color-rose-300: #fda4af;
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-rose-600: #e11d48;
+  --color-rose-700: #be123c;
+  --color-rose-800: #9f1239;
+  --color-rose-900: #881337;
 }
 
 @layer base {
   :root {
     --bg-color: var(--color-background-light);
     --text-color: #1a1a1a;
-    --card-bg: rgba(0, 0, 0, 0.05);
-    --border-color: rgba(0, 0, 0, 0.05);
+    --card-bg: #f8fafc;
+    --card-bg-hover: #f1f5f9;
+    --border-color: #e2e8f0;
     --muted-text: #64748b;
     --nav-bg: #FFF5F7;
     --nav-icon-unselected: #64748b;
@@ -23,8 +58,9 @@
   :root.dark {
     --bg-color: var(--color-background-dark);
     --text-color: #ffffff;
-    --card-bg: rgba(255, 255, 255, 0.05);
-    --border-color: rgba(255, 255, 255, 0.05);
+    --card-bg: #2d2d2d;
+    --card-bg-hover: #3d3d3d;
+    --border-color: rgba(255, 255, 255, 0.1);
     --muted-text: #94a3b8;
     --nav-bg: #1a1a1a;
     --nav-icon-unselected: #FFF5F7;
