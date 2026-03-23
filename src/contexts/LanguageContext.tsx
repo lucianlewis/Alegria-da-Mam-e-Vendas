@@ -309,6 +309,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     exchangeVoucher: 'Exchange Voucher',
     noOpenSessionFound: 'No open session found to close',
     sessionAlreadyOpen: 'A session is already open',
+    sessionDate: 'Session Date',
   },
   'pt-BR': {
     dashboard: 'Painel',
@@ -504,6 +505,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
     exchangeVoucher: 'Vale Troca',
     noOpenSessionFound: 'Nenhuma sessão aberta encontrada para fechar',
     sessionAlreadyOpen: 'Já existe uma sessão aberta',
+    sessionDate: 'Data da Sessão',
   },
   fr: {
     dashboard: 'Tableau de bord',

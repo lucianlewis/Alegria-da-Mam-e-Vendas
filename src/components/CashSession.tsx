@@ -38,6 +38,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
   });
   const [mode, setMode] = useState<'opening' | 'closing'>(currentSession ? 'closing' : 'opening');
   const [lastClosedSession, setLastClosedSession] = useState<CashSessionInterface | null>(null);
+  const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]);
 
   // New closing fields
   const [credit, setCredit] = useState<string>('');
@@ -146,6 +147,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
 
     setLoading(true);
     try {
+      const selectedDate = new Date(sessionDate + 'T' + new Date().toTimeString().split(' ')[0]);
       const bills: Record<string, number> = {};
       Object.entries(billQuantities).forEach(([val, qty]) => {
         if (qty > 0) bills[val] = qty;
@@ -168,7 +170,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
 
       if (mode === 'closing' && currentSession) {
         // Closing session
-        const closingTime = new Date();
+        const closingTime = selectedDate;
         const timestampCode = closingTime.getTime().toString();
         const totalCash = parseFloat(amount);
         const openingTime = currentSession.openingTimestamp?.toDate?.() || new Date(currentSession.openingTimestamp);
@@ -180,7 +182,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
         const diff = parseFloat(amount) - expectedCash;
         
         await updateDoc(doc(db, 'cashSessions', currentSession.id!), {
-          closingTimestamp: serverTimestamp(),
+          closingTimestamp: Timestamp.fromDate(selectedDate),
           closingAmount: totalCash,
           closingDetails: details,
           expectedAmount: expectedCash,
@@ -195,7 +197,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
         await addDoc(collection(db, 'cashSessions'), {
           userId: auth.currentUser?.uid,
           userName: auth.currentUser?.displayName || t('unknown'),
-          openingTimestamp: serverTimestamp(),
+          openingTimestamp: Timestamp.fromDate(selectedDate),
           openingAmount: parseFloat(amount),
           openingDetails: details,
           status: 'open',
@@ -248,6 +250,19 @@ export const CashSession: React.FC<CashSessionProps> = ({
             <Lock size={14} />
             {t('closing')}
           </button>
+        </div>
+        
+        {/* Date Selector */}
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-2">
+          <label className="text-[10px] font-bold text-slate-500 uppercase px-2 flex items-center gap-2">
+            {t('sessionDate')}
+          </label>
+          <input
+            type="date"
+            value={sessionDate}
+            onChange={(e) => setSessionDate(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
+          />
         </div>
 
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-6 space-y-4">
