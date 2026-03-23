@@ -19,6 +19,8 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
     credit: CreditCard,
     debit: Smartphone,
     pix: QrCode,
+    'payment-link': Smartphone,
+    'exchange-voucher': Banknote,
   };
 
   const totalsByMethod = sales.reduce((acc, sale) => {
@@ -39,8 +41,11 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
         </div>
         
         <div className="grid grid-cols-2 gap-3">
-          {['cash', 'credit', 'debit', 'pix'].map((method) => {
+          {['cash', 'credit', 'debit', 'pix', 'payment-link', 'exchange-voucher'].map((method) => {
             const Icon = methodIcons[method as keyof typeof methodIcons];
+            const label = method === 'payment-link' ? t('paymentLink') : 
+                          method === 'exchange-voucher' ? t('exchangeVoucher') : 
+                          t(method);
             return (
               <div 
                 key={method} 
@@ -49,7 +54,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
               >
                 <Icon size={20} className="text-primary group-hover:scale-110 transition-transform" />
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{t(method)}</p>
+                  <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{label}</p>
                   <p className="text-xl font-black">{formatCurrency(totalsByMethod[method] || 0)}</p>
                 </div>
               </div>

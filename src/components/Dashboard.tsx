@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { TrendingUp, TrendingDown, CheckCircle, PieChart, Calendar, ChevronDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle, PieChart, Calendar, ChevronDown, Power } from 'lucide-react';
 import { Sale, Goal, Seller } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { calculateDailyGoal, isWorkingDay } from '../utils/goalUtils';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, PieChart as RePieChart, Pie, Cell } from 'recharts';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, format, eachDayOfInterval, subDays, eachHourOfInterval, isSameHour, isSameDay, isSameWeek } from 'date-fns';
 
@@ -10,11 +11,13 @@ interface DashboardProps {
   sales: Sale[];
   goals: Goal[];
   sellers: Seller[];
+  onCashSessionClick: () => void;
+  isSessionOpen: boolean;
 }
 
 type TimePeriod = 'day' | 'week' | 'month' | 'custom';
 
-export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onCashSessionClick, isSessionOpen }) => {
   const { t, formatCurrency } = useLanguage();
   const [activePeriod, setActivePeriod] = useState<TimePeriod>('day');
   const [showCustomPicker, setShowCustomPicker] = useState(false);
@@ -47,9 +50,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers }) =
   
   // Calculate target based on period
   const monthlyTarget = sellers.reduce((acc, s) => acc + (s.goal || 0), 0);
+  const dailyGoal = calculateDailyGoal(sellers, now);
+  
   let target = monthlyTarget;
-  if (activePeriod === 'day') target = monthlyTarget / 30;
-  if (activePeriod === 'week') target = monthlyTarget / 4;
+  if (activePeriod === 'day') {
+    target = dailyGoal;
+  } else if (activePeriod === 'week') {
+    const days = eachDayOfInterval({ start: startOfWeek(now), end: endOfWeek(now) });
+    const workingDaysInWeek = days.filter(isWorkingDay).length;
+    target = dailyGoal * workingDaysInWeek;
+  }
 
   const remaining = Math.max(0, target - totalSales);
   const growth = totalSales > 0 ? 12.5 : 0; // Mock growth if sales exist
@@ -127,8 +137,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers }) =
     <div className="p-4 space-y-6">
       <header className="flex items-center justify-between py-2">
         <h2 className="text-xl font-bold tracking-tight">{t('dashboard')}</h2>
-        <div className="size-10 rounded-full bg-[var(--card-bg)] flex items-center justify-center border border-[var(--border-color)]">
-          <PieChart size={20} className="text-primary" />
+        <div className="flex gap-2">
+          <button 
+            onClick={onCashSessionClick}
+            className={`size-10 rounded-full bg-[var(--card-bg)] flex items-center justify-center border transition-colors ${isSessionOpen ? 'border-primary' : 'border-[var(--border-color)]'}`}
+          >
+            <Power size={20} className={isSessionOpen ? 'text-primary' : 'text-slate-400'} />
+          </button>
+          <div className="size-10 rounded-full bg-[var(--card-bg)] flex items-center justify-center border border-[var(--border-color)]">
+            <PieChart size={20} className="text-primary" />
+          </div>
         </div>
       </header>
 
@@ -309,23 +327,46 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers }) =
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">{t('recentGoalProgress')}</h3>
-          <button className="text-primary text-[10px] font-bold uppercase">{t('viewAll')}</button>
         </div>
         
-        {goals.map((goal) => (
-          <div key={goal.id} className="bg-[var(--card-bg)] rounded-2xl p-4 flex items-center gap-4 border border-[var(--border-color)]">
-            <div className="size-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-500">
-              <CheckCircle size={24} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold">{goal.title}</p>
-              <p className="text-slate-500 text-[10px]">{Math.round((goal.current / goal.target) * 100)}% {t('ofTargetReached')} ({formatCurrency(goal.target)})</p>
-            </div>
-            <div className="text-right">
-              <span className="text-emerald-400 text-[10px] font-bold px-2 py-1 bg-emerald-400/10 rounded-full uppercase">{t(goal.status === 'on-track' ? 'onTrack' : goal.status === 'behind' ? 'behind' : 'completed')}</span>
-            </div>
+        {/* Monthly Goal Progress */}
+        <div className="bg-[var(--card-bg)] rounded-2xl p-4 flex items-center gap-4 border border-[var(--border-color)]">
+          <div className="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+            <TrendingUp size={24} />
           </div>
-        ))}
+          <div className="flex-1">
+            <p className="text-sm font-bold">{t('monthlyGoal')}</p>
+            <p className="text-slate-500 text-[10px]">
+              {Math.round((sales.filter(s => isSameWeek(s.timestamp?.toDate() || new Date(), now, { weekStartsOn: 0 }) || true).reduce((acc, s) => {
+                const d = s.timestamp?.toDate() || new Date();
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() ? acc + s.amount : acc;
+              }, 0) / monthlyTarget) * 100)}% {t('ofTargetReached')} ({formatCurrency(monthlyTarget)})
+            </p>
+          </div>
+          <div className="text-right">
+            <span className="text-primary text-[10px] font-bold px-2 py-1 bg-primary/10 rounded-full uppercase">
+              {t('month')}
+            </span>
+          </div>
+        </div>
+
+        {/* Daily Goal Progress */}
+        <div className="bg-[var(--card-bg)] rounded-2xl p-4 flex items-center gap-4 border border-[var(--border-color)]">
+          <div className="size-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+            <CheckCircle size={24} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold">{t('dailyGoal')}</p>
+            <p className="text-slate-500 text-[10px]">
+              {Math.round((sales.filter(s => isSameDay(s.timestamp?.toDate() || new Date(), now)).reduce((acc, s) => acc + s.amount, 0) / dailyGoal) * 100)}% {t('ofTargetReached')} ({formatCurrency(dailyGoal)})
+            </p>
+          </div>
+          <div className="text-right">
+            <span className="text-emerald-400 text-[10px] font-bold px-2 py-1 bg-emerald-400/10 rounded-full uppercase">
+              {t('today')}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

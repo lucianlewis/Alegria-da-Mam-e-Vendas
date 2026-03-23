@@ -21,6 +21,8 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
     credit: CreditCard,
     debit: Smartphone,
     pix: QrCode,
+    'payment-link': Smartphone,
+    'exchange-voucher': Banknote,
   };
 
   const Icon = methodIcons[method as keyof typeof methodIcons] || Info;
@@ -174,7 +176,11 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
         <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="text-xl font-bold flex-1 ml-2">{t(method)} - {t('paymentMethodDetail')}</h1>
+        <h1 className="text-xl font-bold flex-1 ml-2">
+          {method === 'payment-link' ? t('paymentLink') : 
+           method === 'exchange-voucher' ? t('exchangeVoucher') : 
+           t(method)} - {t('paymentMethodDetail')}
+        </h1>
         <button 
           onClick={handlePrint}
           className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full"

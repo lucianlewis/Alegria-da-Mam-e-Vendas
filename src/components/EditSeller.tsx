@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, Camera, Trash2, User, Loader2, AlertCircle } from 'lucide-react';
+import { X, Check, Camera, User, Loader2, AlertCircle } from 'lucide-react';
 import { db, auth } from '../firebase';
-import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { Seller } from '../types';
 import { useLanguage, languages } from '../contexts/LanguageContext';
 
@@ -66,7 +66,6 @@ interface EditSellerProps {
 export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSuccess }) => {
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [name, setName] = useState(seller?.name || '');
   const [email, setEmail] = useState(seller?.email || '');
   const [phone, setPhone] = useState(seller?.phone || '');
@@ -120,21 +119,6 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
       onSuccess();
     } catch (error) {
       handleFirestoreError(error, seller?.id ? OperationType.UPDATE : OperationType.CREATE, path);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!seller?.id) return;
-
-    setLoading(true);
-    const path = `sellers/${seller.id}`;
-    try {
-      await deleteDoc(doc(db, 'sellers', seller.id));
-      onSuccess();
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, path);
     } finally {
       setLoading(false);
     }
@@ -242,56 +226,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
             />
           </div>
         </div>
-
-        {seller && (
-          <button 
-            onClick={() => setShowDeleteConfirm(true)}
-            className="w-full flex items-center justify-center gap-2 text-rose-500 font-bold text-sm py-4 active:bg-rose-500/10 rounded-2xl transition-colors"
-          >
-            <Trash2 size={18} />
-            {t('removeSeller')}
-          </button>
-        )}
       </main>
-
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[var(--bg-color)] border border-[var(--border-color)] rounded-3xl p-6 w-full max-w-sm space-y-6"
-            >
-              <div className="flex flex-col items-center text-center gap-4">
-                <div className="size-16 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-500">
-                  <AlertCircle size={32} />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-bold">{t('removeSeller')}</h3>
-                  <p className="text-sm text-slate-400">{t('confirmRemoveSeller')}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-4 rounded-2xl bg-[var(--card-bg)] text-sm font-bold border border-[var(--border-color)] active:scale-95 transition-transform"
-                >
-                  {t('cancel')}
-                </button>
-                <button 
-                  onClick={handleDelete}
-                  disabled={loading}
-                  className="flex-1 py-4 rounded-2xl bg-rose-500 text-white text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-transform disabled:opacity-50"
-                >
-                  {loading ? <Loader2 size={20} className="animate-spin mx-auto" /> : t('removeSeller')}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

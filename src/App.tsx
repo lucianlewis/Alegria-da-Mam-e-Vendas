@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData, useCollection } from 'react-firebase-hooks/firestore';
-import { collection, query, orderBy, limit, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, doc, getDoc, setDoc, serverTimestamp, where } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { Auth } from './components/Auth';
 import { Layout } from './components/Layout';
@@ -15,7 +15,8 @@ import { EditSeller } from './components/EditSeller';
 import { SellerPerformance } from './components/SellerPerformance';
 import { CashMovement } from './components/CashMovement';
 import { PaymentMethodDetail } from './components/PaymentMethodDetail';
-import { Sale, Goal, Seller, CashMovementType, CashMovement as CashMovementInterface } from './types';
+import { CashSession } from './components/CashSession';
+import { Sale, Goal, Seller, CashMovementType, CashMovement as CashMovementInterface, CashSession as CashSessionInterface } from './types';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
@@ -24,9 +25,20 @@ export default function App() {
   const [showNewSale, setShowNewSale] = useState(false);
   const [showCashMovement, setShowCashMovement] = useState(false);
   const [cashMovementType, setCashMovementType] = useState<CashMovementType>('sangria');
-  const [view, setView] = useState<'main' | 'sellers' | 'edit-seller' | 'performance'>('main');
+  const [view, setView] = useState<'main' | 'sellers' | 'edit-seller' | 'performance' | 'cash-session'>('main');
   const [selectedSeller, setSelectedSeller] = useState<Seller | undefined>();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+
+  // Fetch current open cash session
+  const cashSessionsQuery = query(
+    collection(db, 'cashSessions'), 
+    where('status', '==', 'open'),
+    limit(1)
+  );
+  const [sessionsSnapshot, sessionsLoading] = useCollection(cashSessionsQuery);
+  const currentSession = sessionsSnapshot && !sessionsSnapshot.empty 
+    ? { id: sessionsSnapshot.docs[0].id, ...sessionsSnapshot.docs[0].data() } as CashSessionInterface 
+    : null;
 
   // Ensure user document exists
   useEffect(() => {
@@ -47,12 +59,12 @@ export default function App() {
     }
   }, [user]);
 
-  // Fetch sales
-  const salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'), limit(50));
+  // Fetch sales - Global query to ensure all records are fetched
+  const salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'));
   const [salesData, salesLoading] = useCollectionData(salesQuery);
 
-  // Fetch cashMovements
-  const cashMovementsQuery = query(collection(db, 'cashMovements'), orderBy('timestamp', 'desc'), limit(50));
+  // Fetch cashMovements - Global query
+  const cashMovementsQuery = query(collection(db, 'cashMovements'), orderBy('timestamp', 'desc'));
   const [cashMovementsData, cashMovementsLoading] = useCollectionData(cashMovementsQuery);
 
   // Fetch goals (mocking some initial data if empty)
@@ -74,10 +86,17 @@ export default function App() {
     ...doc.data()
   })) || []) as Seller[];
 
-  if (loading) {
+  const isInitialLoading = loading || salesLoading || sellersLoading || goalsLoading || cashMovementsLoading || sessionsLoading;
+
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-[var(--bg-color)] flex items-center justify-center transition-colors duration-300">
-        <Loader2 className="animate-spin text-primary" size={48} />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="animate-spin text-primary" size={48} />
+          <p className="text-slate-500 text-sm font-bold animate-pulse">
+            Carregando dados persistentes...
+          </p>
+        </div>
       </div>
     );
   }
@@ -109,6 +128,7 @@ export default function App() {
     return (
       <SellersList 
         sellers={sellers}
+        sales={sales}
         onBack={() => setView('main')}
         onAddSeller={() => {
           setSelectedSeller(undefined);
@@ -162,10 +182,33 @@ export default function App() {
     );
   }
 
+  if (view === 'cash-session') {
+    return (
+      <CashSession 
+        currentSession={currentSession}
+        allSales={sales}
+        allMovements={cashMovements}
+        onBack={() => setView('main')}
+        onSuccess={() => {
+          setView('main');
+          setActiveTab('home');
+        }}
+      />
+    );
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <Dashboard sales={sales} goals={goals} sellers={sellers} />;
+        return (
+          <Dashboard 
+            sales={sales} 
+            goals={goals} 
+            sellers={sellers} 
+            isSessionOpen={!!currentSession}
+            onCashSessionClick={() => setView('cash-session')}
+          />
+        );
       case 'entries':
         return (
           <Entries 
@@ -179,7 +222,7 @@ export default function App() {
           />
         );
       case 'history':
-        return <History sales={sales} cashMovements={cashMovements} goals={goals} />;
+        return <History sales={sales} cashMovements={cashMovements} goals={goals} sellers={sellers} />;
       case 'profile':
         return (
           <Profile 
@@ -198,7 +241,15 @@ export default function App() {
           />
         );
       default:
-        return <Dashboard sales={sales} goals={goals} sellers={sellers} />;
+        return (
+          <Dashboard 
+            sales={sales} 
+            goals={goals} 
+            sellers={sellers} 
+            isSessionOpen={!!currentSession}
+            onCashSessionClick={() => setView('cash-session')}
+          />
+        );
     }
   };
 

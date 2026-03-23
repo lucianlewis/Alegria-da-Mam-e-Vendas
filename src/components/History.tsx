@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Share2, Download, ChevronDown, Trash2, Calendar, Clock, User, CreditCard, Banknote, Smartphone, QrCode, Store, MessageCircle, Instagram, AlertCircle, Loader2, FileText } from 'lucide-react';
-import { Sale, CashMovement, Goal } from '../types';
+import { Sale, CashMovement, Goal, Seller } from '../types';
 import { format, isSameDay } from 'date-fns';
 import { enUS, ptBR, fr, es, de, hi, ru, ja, zhCN, ko, th } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../firebase';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { DailyReport } from './DailyReport';
@@ -29,9 +29,10 @@ interface HistoryProps {
   sales: Sale[];
   cashMovements: CashMovement[];
   goals: Goal[];
+  sellers: Seller[];
 }
 
-export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals }) => {
+export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, sellers }) => {
   const { t, formatCurrency, language } = useLanguage();
   const currentLocale = locales[language] || enUS;
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -117,6 +118,7 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals })
               sales={sales.filter(s => isSameDay(s.timestamp?.toDate() || new Date(), selectedSummary.date))}
               cashMovements={cashMovements.filter(m => isSameDay(m.timestamp?.toDate() || new Date(), selectedSummary.date))}
               goal={goals[0]} // Using first goal as default
+              sellers={sellers}
               onBack={() => setSelectedSummary(null)}
             />
           )}

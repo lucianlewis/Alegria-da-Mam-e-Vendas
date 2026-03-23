@@ -82,6 +82,26 @@
         "userName": { "type": "string" }
       },
       "required": ["type", "amount", "timestamp", "userId"]
+    },
+    "CashSession": {
+      "title": "Cash Session",
+      "description": "A cash register opening or closing session",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "openingTimestamp": { "type": "string", "format": "date-time" },
+        "openingAmount": { "type": "number" },
+        "openingDetails": { "type": "object" },
+        "closingTimestamp": { "type": "string", "format": "date-time" },
+        "closingAmount": { "type": "number" },
+        "closingDetails": { "type": "object" },
+        "expectedAmount": { "type": "number" },
+        "difference": { "type": "number" },
+        "status": { "type": "string", "enum": ["open", "closed"] },
+        "observations": { "type": "string" }
+      },
+      "required": ["userId", "openingTimestamp", "openingAmount", "status"]
     }
   },
   "firestore": {
@@ -89,6 +109,7 @@
     "/sales/{saleId}": { "schema": "Sale", "description": "Sales records" },
     "/goals/{goalId}": { "schema": "Goal", "description": "Sales goals" },
     "/sellers/{sellerId}": { "schema": "Seller", "description": "Registered sellers" },
-    "/cashMovements/{movementId}": { "schema": "CashMovement", "description": "Cash movements (sangria/reforco)" }
+    "/cashMovements/{movementId}": { "schema": "CashMovement", "description": "Cash movements (sangria/reforco)" },
+    "/cashSessions/{sessionId}": { "schema": "CashSession", "description": "Cash register sessions" }
   }
 }

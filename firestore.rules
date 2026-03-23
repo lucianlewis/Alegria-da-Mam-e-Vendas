@@ -30,6 +30,22 @@
 //   - current: number (required)
 //   - status: string (required, enum: ['on-track', 'behind', 'completed'])
 //
+// Collection: cashSessions
+// Document ID: auto-generated
+// Fields:
+//   - userId: string (required)
+//   - userName: string (optional)
+//   - openingTimestamp: timestamp (required)
+//   - openingAmount: number (required)
+//   - openingDetails: map (optional)
+//   - closingTimestamp: timestamp (optional)
+//   - closingAmount: number (optional)
+//   - closingDetails: map (optional)
+//   - expectedAmount: number (optional)
+//   - difference: number (optional)
+//   - status: string (required, enum: ['open', 'closed'])
+//   - observations: string (optional)
+//
 // ===============================================================
 
 rules_version = '2';
@@ -105,6 +121,22 @@ service cloud.firestore {
              (!('cashDetails' in data) || data.cashDetails is map);
     }
 
+    function isValidCashSession(data) {
+      return data.keys().hasAll(['userId', 'openingTimestamp', 'openingAmount', 'status']) &&
+             data.userId is string &&
+             data.openingTimestamp is timestamp &&
+             data.openingAmount is number &&
+             data.status in ['open', 'closed'] &&
+             (!('userName' in data) || data.userName is string) &&
+             (!('openingDetails' in data) || data.openingDetails is map) &&
+             (!('closingTimestamp' in data) || data.closingTimestamp is timestamp) &&
+             (!('closingAmount' in data) || data.closingAmount is number) &&
+             (!('closingDetails' in data) || data.closingDetails is map) &&
+             (!('expectedAmount' in data) || data.expectedAmount is number) &&
+             (!('difference' in data) || data.difference is number) &&
+             (!('observations' in data) || data.observations is string);
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -113,7 +145,17 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if isAuthenticated() && isValidCashMovement(request.resource.data) && 
                     (request.resource.data.userId == request.auth.uid || isAdmin());
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /cashSessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidCashSession(request.resource.data) && 
+                    (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && resource.data.status == 'open' && isValidCashSession(request.resource.data) && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if false;
     }
 
     match /users/{userId} {
@@ -129,7 +171,7 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isValidSale(request.resource.data) && 
                     (request.resource.data.sellerId == request.auth.uid || isAdmin());
       allow update: if isAdmin() && isValidSale(request.resource.data);
-      allow delete: if isAdmin() || (isAuthenticated() && resource.data.sellerId == request.auth.uid);
+      allow delete: if false;
     }
 
     match /goals/{goalId} {
@@ -140,7 +182,7 @@ service cloud.firestore {
     match /sellers/{sellerId} {
       allow read: if isAuthenticated();
       allow create, update: if isAdmin() && isValidSeller(request.resource.data);
-      allow delete: if isAdmin();
+      allow delete: if false;
     }
 
     match /{path=**} {

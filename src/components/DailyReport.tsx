@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Share2, Download, CheckCircle2, TrendingUp } from 'lucide-react';
-import { Sale, CashMovement, Goal } from '../types';
+import { Sale, CashMovement, Goal, Seller } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { calculateDailyGoal } from '../utils/goalUtils';
 import { format } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
 import { jsPDF } from 'jspdf';
@@ -13,10 +14,11 @@ interface DailyReportProps {
   sales: Sale[];
   cashMovements: CashMovement[];
   goal?: Goal;
+  sellers: Seller[];
   onBack: () => void;
 }
 
-export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovements, goal, onBack }) => {
+export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovements, goal, sellers, onBack }) => {
   const { t, formatCurrency, language } = useLanguage();
   const currentLocale = language === 'pt-BR' ? ptBR : enUS;
 
@@ -37,7 +39,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
     .filter(m => m.type === 'reforco')
     .reduce((acc, m) => acc + m.amount, 0);
 
-  const goalTarget = (goal?.target || 5000) / 30;
+  const goalTarget = calculateDailyGoal(sellers, date);
   const diff = totalSales - goalTarget;
   const isGoalMet = diff >= 0;
   const progress = Math.min(100, (totalSales / goalTarget) * 100);
@@ -281,14 +283,16 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
 
             <div className="text-center space-y-1">
               <p className="text-sm font-bold" style={{ color: colors.text }}>
-                {isGoalMet ? (
-                  diff === 0 ? t('goalMet') : `${t('exceededBy')} `
+                {diff === 0 ? (
+                  <span style={{ color: colors.success }}>{t('goalMet')}</span>
                 ) : (
-                  `${t('onlyMissing')} `
+                  <>
+                    {isGoalMet ? `${t('exceededBy')} ` : `${t('onlyMissing')} `}
+                    <span style={{ color: isGoalMet ? colors.success : colors.primary }}>
+                      {formatCurrency(Math.abs(diff))}
+                    </span>
+                  </>
                 )}
-                <span style={{ color: isGoalMet ? colors.success : colors.primary }}>
-                  {formatCurrency(Math.abs(diff))}
-                </span>
               </p>
               <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.muted }}>
                 {t('goalOfTheDay')}: {formatCurrency(goalTarget)}

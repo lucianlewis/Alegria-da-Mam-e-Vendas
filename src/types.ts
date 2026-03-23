@@ -1,4 +1,4 @@
-export type PaymentMethod = 'cash' | 'credit' | 'debit' | 'pix';
+export type PaymentMethod = 'cash' | 'credit' | 'debit' | 'pix' | 'payment-link' | 'exchange-voucher';
 export type SaleSource = 'physical-store' | 'whatsapp' | 'instagram';
 
 export interface UserProfile {
@@ -58,4 +58,35 @@ export interface CashMovement {
   };
   userId: string;
   userName: string;
+}
+
+export interface CashSession {
+  id?: string;
+  userId: string;
+  userName: string;
+  openingTimestamp: any;
+  closingTimestamp?: any;
+  openingAmount: number;
+  closingAmount?: number;
+  expectedAmount?: number;
+  difference?: number;
+  status: 'open' | 'closed';
+  openingDetails: {
+    bills: Record<string, number>;
+    coins: Record<string, number>;
+    total: number;
+  };
+  closingDetails?: {
+    bills: Record<string, number>;
+    coins: Record<string, number>;
+    total: number;
+    credit?: number;
+    debit?: number;
+    pix?: number;
+    paymentLink?: number;
+    exchangeVoucher?: number;
+  };
+  observations?: string;
+  transactionHash?: string;
+  previousSessionId?: string;
 }

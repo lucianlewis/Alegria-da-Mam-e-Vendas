@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, User, TrendingUp, Calendar, Clock, Trash2, Eye, Share2, X, Loader2, Banknote, CreditCard, Smartphone, QrCode, Store, MessageCircle, Instagram, FileText } from 'lucide-react';
+import { ArrowLeft, User, TrendingUp, Calendar, Clock, Eye, Share2, X, Loader2, Banknote, CreditCard, Smartphone, QrCode, Store, MessageCircle, Instagram, FileText } from 'lucide-react';
 import { Seller, Sale } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../firebase';
-import { collection, query, where, orderBy, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
-import { format } from 'date-fns';
+import { collection, query, where, orderBy, onSnapshot, doc } from 'firebase/firestore';
+import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
+import { calculateDailyGoal, getWorkingDaysInMonth } from '../utils/goalUtils';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -20,8 +21,6 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showConfirm, setShowConfirm] = useState<string | null>(null);
 
   const currentLocale = language === 'pt-BR' ? ptBR : enUS;
 
@@ -43,18 +42,6 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
 
     return () => unsubscribe();
   }, [seller.id]);
-
-  const handleDelete = async (id: string) => {
-    setDeletingId(id);
-    setShowConfirm(null);
-    try {
-      await deleteDoc(doc(db, 'sales', id));
-    } catch (error) {
-      console.error("Error deleting sale:", error);
-    } finally {
-      setDeletingId(null);
-    }
-  };
 
   const handlePrint = async (sale: Sale) => {
     const date = sale.timestamp ? format(sale.timestamp.toDate(), 'PPP HH:mm:ss', { locale: currentLocale }) : '--';
@@ -166,7 +153,24 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
   };
 
   const totalSales = sales.reduce((acc, sale) => acc + sale.amount, 0);
-  const progress = Math.min(100, (totalSales / seller.goal) * 100);
+  
+  // Monthly progress
+  const monthlyProgress = Math.min(100, (totalSales / seller.goal) * 100);
+  
+  // Daily goal for this seller
+  const workingDays = getWorkingDaysInMonth(new Date());
+  const dailyGoal = seller.goal / workingDays;
+  
+  // Sales today for this seller
+  const salesToday = sales.filter(s => {
+    const d = s.timestamp?.toDate() || new Date();
+    const today = new Date();
+    return d.getDate() === today.getDate() && 
+           d.getMonth() === today.getMonth() && 
+           d.getFullYear() === today.getFullYear();
+  }).reduce((acc, s) => acc + s.amount, 0);
+  
+  const dailyProgress = Math.min(100, (salesToday / dailyGoal) * 100);
 
   const getMethodIcon = (method: string) => {
     switch (method) {
@@ -212,25 +216,44 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
-            <span className="text-slate-500">{t('progress')}</span>
-            <span className="text-primary">{progress.toFixed(1)}%</span>
-          </div>
-          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              className="h-full bg-primary"
-            />
-          </div>
-          <div className="flex justify-between items-end pt-1">
-            <div className="space-y-0.5">
-              <p className="text-[10px] text-slate-500 uppercase font-bold">{t('totalSales')}</p>
-              <p className="text-xl font-black">{formatCurrency(totalSales)}</p>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-500">{t('monthlyProgress')}</span>
+              <span className="text-primary">{monthlyProgress.toFixed(1)}%</span>
             </div>
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <TrendingUp size={20} />
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${monthlyProgress}%` }}
+                className="h-full bg-primary"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-500">{t('dailyGoal')}</span>
+              <span className="text-emerald-400">{dailyProgress.toFixed(1)}%</span>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${dailyProgress}%` }}
+                className="h-full bg-emerald-400"
+              />
+            </div>
+            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              <span>{formatCurrency(salesToday)} / {formatCurrency(dailyGoal)}</span>
+              {salesToday >= dailyGoal ? (
+                salesToday === dailyGoal ? (
+                  <span className="text-emerald-400">{t('goalMet')}</span>
+                ) : (
+                  <span className="text-emerald-400">+{formatCurrency(salesToday - dailyGoal)}</span>
+                )
+              ) : (
+                <span className="text-primary">-{formatCurrency(dailyGoal - salesToday)}</span>
+              )}
             </div>
           </div>
         </div>
@@ -284,44 +307,8 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                       >
                         <Eye size={16} />
                       </button>
-                      <button 
-                        onClick={() => sale.id && setShowConfirm(sale.id)}
-                        disabled={deletingId === sale.id}
-                        className="text-rose-500 hover:bg-rose-500/10 size-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
-                      >
-                        {deletingId === sale.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                      </button>
                     </div>
                   </div>
-
-                  <AnimatePresence>
-                    {showConfirm === sale.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 space-y-3 mt-2">
-                          <p className="text-[10px] font-bold text-rose-500 uppercase text-center">{t('confirmDelete')}</p>
-                          <div className="flex gap-2">
-                            <button 
-                              onClick={() => setShowConfirm(null)}
-                              className="flex-1 bg-white/10 py-2 rounded-lg text-[10px] font-bold uppercase"
-                            >
-                              {t('cancel')}
-                            </button>
-                            <button 
-                              onClick={() => sale.id && handleDelete(sale.id)}
-                              className="flex-1 bg-rose-500 text-white py-2 rounded-lg text-[10px] font-bold uppercase"
-                            >
-                              {t('delete')}
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </motion.div>
               );
             })

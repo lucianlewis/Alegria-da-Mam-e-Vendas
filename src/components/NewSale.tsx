@@ -240,18 +240,25 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-500 uppercase">{t('paymentMethod')}</label>
               <div className="grid grid-cols-2 gap-2">
-                {['cash', 'credit', 'debit', 'pix'].map((method) => (
+                {[
+                  { id: 'cash', label: t('cash') },
+                  { id: 'credit', label: t('credit') },
+                  { id: 'debit', label: t('debit') },
+                  { id: 'pix', label: t('pix') },
+                  { id: 'payment-link', label: t('paymentLink') },
+                  { id: 'exchange-voucher', label: t('exchangeVoucher') },
+                ].map((method) => (
                   <button
-                    key={method}
-                    onClick={() => setPaymentMethod(method as PaymentMethod)}
+                    key={method.id}
+                    onClick={() => setPaymentMethod(method.id as PaymentMethod)}
                     className={cn(
-                      "py-3 rounded-xl border text-sm font-bold capitalize transition-all",
-                      paymentMethod === method 
+                      "py-3 rounded-xl border text-[10px] font-bold capitalize transition-all",
+                      paymentMethod === method.id 
                         ? "bg-primary/10 border-primary text-primary" 
                         : "bg-[var(--card-bg)] border-[var(--border-color)] text-slate-400"
                     )}
                   >
-                    {t(method)}
+                    {method.label}
                   </button>
                 ))}
               </div>
