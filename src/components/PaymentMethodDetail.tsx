@@ -1,10 +1,14 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, Banknote, CreditCard, Smartphone, QrCode, TrendingUp, TrendingDown, Info, FileText } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowLeft, Banknote, CreditCard, Smartphone, QrCode, TrendingUp, TrendingDown, Info, FileText, Trash2, Loader2, Calendar, Clock } from 'lucide-react';
 import { Sale, CashMovement, PaymentMethod } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { db } from '../firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { format } from 'date-fns';
+import { ptBR, enUS } from 'date-fns/locale';
 
 interface PaymentMethodDetailProps {
   method: string;
@@ -14,7 +18,11 @@ interface PaymentMethodDetailProps {
 }
 
 export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method, sales, cashMovements, onBack }) => {
-  const { t, formatCurrency, bills: availableBills, coins: availableCoins } = useLanguage();
+  const { t, formatCurrency, language, bills: availableBills, coins: availableCoins } = useLanguage();
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  const currentLocale = language === 'pt-BR' ? ptBR : enUS;
 
   const methodIcons = {
     cash: Banknote,
@@ -168,6 +176,18 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
       document.body.removeChild(container);
     }
   };
+
+  const handleDeleteSale = async (id: string) => {
+    try {
+      setIsDeleting(true);
+      await deleteDoc(doc(db, 'sales', id));
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 ;
 
   return (
@@ -300,11 +320,19 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                     <p className="text-[10px] text-slate-500">{t(sale.source)}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-black">{formatCurrency(sale.amount)}</p>
-                  <p className="text-[10px] text-slate-500">
-                    {sale.timestamp?.toDate ? sale.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-black">{formatCurrency(sale.amount)}</p>
+                    <p className="text-[10px] text-slate-500">
+                      {sale.timestamp?.toDate ? sale.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(sale.id)}
+                    className="text-rose-500 hover:bg-rose-500/10 size-8 rounded-lg flex items-center justify-center transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -314,6 +342,49 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
           </div>
         </div>
       </main>
+
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDeleteConfirm(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-xs bg-[var(--card-bg)] rounded-[32px] p-6 text-center space-y-6 border border-[var(--border-color)] shadow-2xl"
+            >
+              <div className="size-16 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mx-auto">
+                <Trash2 size={32} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold">{t('confirmDelete')}</h3>
+                <p className="text-sm text-slate-500">{t('confirmDeleteSale')}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-xs font-bold uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  onClick={() => handleDeleteSale(showDeleteConfirm)}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 rounded-2xl bg-rose-500 text-white text-xs font-bold uppercase tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center"
+                >
+                  {isDeleting ? <Loader2 className="animate-spin" size={16} /> : t('delete')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

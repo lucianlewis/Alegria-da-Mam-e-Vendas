@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, User, TrendingUp, Calendar, Clock, Eye, Share2, X, Loader2, Banknote, CreditCard, Smartphone, QrCode, Store, MessageCircle, Instagram, FileText } from 'lucide-react';
+import { ArrowLeft, User, TrendingUp, Calendar, Clock, Eye, Share2, X, Loader2, Banknote, CreditCard, Smartphone, QrCode, Store, MessageCircle, Instagram, FileText, Trash2 } from 'lucide-react';
 import { Seller, Sale } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../firebase';
-import { collection, query, where, orderBy, onSnapshot, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
 import { calculateDailyGoal, getWorkingDaysInMonth } from '../utils/goalUtils';
@@ -21,6 +21,8 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const currentLocale = language === 'pt-BR' ? ptBR : enUS;
 
@@ -149,6 +151,18 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
       } catch (error) {
         console.error("Error copying to clipboard:", error);
       }
+    }
+  };
+
+  const handleDeleteSale = async (id: string) => {
+    try {
+      setIsDeleting(true);
+      await deleteDoc(doc(db, 'sales', id));
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -307,6 +321,12 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                       >
                         <Eye size={16} />
                       </button>
+                      <button 
+                        onClick={() => setShowDeleteConfirm(sale.id)}
+                        className="text-rose-500 hover:bg-rose-500/10 size-8 rounded-lg flex items-center justify-center transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
                 </motion.div>
@@ -318,6 +338,47 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
 
       {/* Sale Details Modal */}
       <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDeleteConfirm(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-xs bg-[var(--card-bg)] rounded-[32px] p-6 text-center space-y-6 border border-[var(--border-color)] shadow-2xl"
+            >
+              <div className="size-16 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 mx-auto">
+                <Trash2 size={32} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold">{t('confirmDelete')}</h3>
+                <p className="text-sm text-slate-500">{t('confirmDeleteSale')}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-xs font-bold uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  onClick={() => handleDeleteSale(showDeleteConfirm)}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 rounded-2xl bg-rose-500 text-white text-xs font-bold uppercase tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center"
+                >
+                  {isDeleting ? <Loader2 className="animate-spin" size={16} /> : t('delete')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {selectedSale && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
             <motion.div
