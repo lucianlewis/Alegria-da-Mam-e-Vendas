@@ -21,8 +21,11 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
   const [extractedSales, setExtractedSales] = useState<any[]>([]);
   const [selectedSalesIndices, setSelectedSalesIndices] = useState<Set<number>>(new Set());
   const [showPreview, setShowPreview] = useState(false);
-  const [selectedMethods, setSelectedMethods] = useState<PaymentMethod[]>(['cash']);
-  const [methodAmounts, setMethodAmounts] = useState<Record<string, string>>({});
+  const [payments, setPayments] = useState<{ id: string; method: PaymentMethod; amount: string }[]>([
+    { id: Math.random().toString(36).substr(2, 9), method: 'cash', amount: '' }
+  ]);
+  const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [saleTime, setSaleTime] = useState<string>(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
   const [source, setSource] = useState<SaleSource>('physical-store');
   const [sellerId, setSellerId] = useState<string>(auth.currentUser?.uid || '');
   const [sellerName, setSellerName] = useState<string>(auth.currentUser?.displayName || t('unknown'));
@@ -52,15 +55,18 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
 
   // Update amount when bill/coin quantities change
   useEffect(() => {
-    if (selectedMethods.includes('cash')) {
+    const cashPayment = payments.find(p => p.method === 'cash');
+    if (cashPayment) {
       const billsTotal = Object.entries(billQuantities).reduce((acc, [value, qty]) => acc + (Number(value) * qty), 0);
       const coinsTotal = Object.entries(coinQuantities).reduce((acc, [value, qty]) => acc + (Number(value) * qty), 0);
       const total = billsTotal + coinsTotal;
       if (total > 0) {
-        setMethodAmounts(prev => ({ ...prev, cash: total.toString() }));
+        setPayments(prev => prev.map(p => 
+          p.method === 'cash' ? { ...p, amount: total.toString() } : p
+        ));
       }
     }
-  }, [billQuantities, coinQuantities, selectedMethods]);
+  }, [billQuantities, coinQuantities]);
 
   const handleBillChange = (value: number, delta: number) => {
     setBillQuantities(prev => ({
@@ -95,8 +101,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         const result = await analyzeReceipt(base64);
         if (result.amount) {
           const method = (result.paymentMethod?.toLowerCase() as PaymentMethod) || 'cash';
-          setSelectedMethods([method]);
-          setMethodAmounts({ [method]: result.amount.toString() });
+          setPayments([{ id: Math.random().toString(36).substr(2, 9), method, amount: result.amount.toString() }]);
         }
       };
       reader.readAsDataURL(file);
@@ -188,32 +193,51 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
   };
 
   const togglePaymentMethod = (method: PaymentMethod) => {
-    setSelectedMethods(prev => {
-      if (prev.includes(method)) {
-        if (prev.length === 1) return prev; // Keep at least one
-        const newMethods = prev.filter(m => m !== method);
-        const newAmounts = { ...methodAmounts };
-        delete newAmounts[method];
-        setMethodAmounts(newAmounts);
-        return newMethods;
+    const multiAllowed = ['credit', 'debit', 'pix'].includes(method);
+    
+    setPayments(prev => {
+      const existing = prev.find(p => p.method === method);
+      
+      if (existing) {
+        if (multiAllowed) {
+          // Add another instance
+          return [...prev, { id: Math.random().toString(36).substr(2, 9), method, amount: '' }];
+        } else {
+          // Toggle off if not multi-allowed and not the last one
+          if (prev.length === 1) return prev;
+          return prev.filter(p => p.method !== method);
+        }
+      } else {
+        // Add first instance
+        return [...prev, { id: Math.random().toString(36).substr(2, 9), method, amount: '' }];
       }
-      return [...prev, method];
     });
   };
 
-  const totalAmount = Object.values(methodAmounts).reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
+  const removePayment = (id: string) => {
+    setPayments(prev => {
+      if (prev.length === 1) return prev;
+      return prev.filter(p => p.id !== id);
+    });
+  };
+
+  const updatePaymentAmount = (id: string, amount: string) => {
+    setPayments(prev => prev.map(p => p.id === id ? { ...p, amount } : p));
+  };
+
+  const totalAmount = payments.reduce((acc, p) => acc + (parseFloat(p.amount) || 0), 0);
 
   const handleSubmit = async () => {
     if (totalAmount <= 0 || !sellerId) return;
 
     setLoading(true);
     try {
-      const salePayments: SalePayment[] = selectedMethods.map(method => {
-        const p: SalePayment = {
-          method,
-          amount: parseFloat(methodAmounts[method]) || 0
+      const salePayments: SalePayment[] = payments.map(p => {
+        const payment: SalePayment = {
+          method: p.method,
+          amount: parseFloat(p.amount) || 0
         };
-        if (method === 'cash') {
+        if (p.method === 'cash') {
           const bills: Record<string, number> = {};
           Object.entries(billQuantities).forEach(([val, qty]) => {
             if (qty > 0) bills[val] = qty;
@@ -222,19 +246,23 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
           Object.entries(coinQuantities).forEach(([val, qty]) => {
             if (qty > 0) coins[val] = qty;
           });
-          p.cashDetails = {
+          payment.cashDetails = {
             bills,
             coins,
-            total: p.amount
+            total: payment.amount
           };
         }
-        return p;
+        return payment;
       }).filter(p => p.amount > 0);
 
       if (salePayments.length === 0) {
         setLoading(false);
         return;
       }
+
+      const [year, month, day] = saleDate.split('-').map(Number);
+      const [hours, minutes] = saleTime.split(':').map(Number);
+      const customTimestamp = new Date(year, month - 1, day, hours, minutes);
 
       const saleData: any = {
         sellerId,
@@ -243,7 +271,8 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         paymentMethod: salePayments[0].method,
         payments: salePayments,
         source,
-        timestamp: serverTimestamp(),
+        timestamp: customTimestamp,
+        createdAt: serverTimestamp(),
       };
 
       if (salePayments.some(p => p.method === 'cash')) {
@@ -281,15 +310,15 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
           <button onClick={() => setShowPreview(false)} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
             <ArrowLeft size={24} />
           </button>
-          <h1 className="m3-headline-small flex-1 ml-2">{t('extractedSales')}</h1>
+          <h1 className="text-xl font-bold flex-1 ml-2">{t('extractedSales')}</h1>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-40">
           <div className="flex items-center justify-between px-2">
-            <p className="m3-label-small text-slate-500">{t('selectSalesToRegister')}</p>
+            <p className="text-xs font-bold text-slate-500">{t('selectSalesToRegister')}</p>
             <button 
               onClick={toggleAllSales}
-              className="m3-label-small text-primary"
+              className="text-xs font-bold text-primary"
             >
               {selectedSalesIndices.size === extractedSales.length ? t('deselectAll') : t('selectAll')}
             </button>
@@ -314,10 +343,10 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                 
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="m3-title-medium">{formatCurrency(sale.amount)}</span>
-                    <span className="m3-label-small text-slate-500">{sale.date} {sale.time}</span>
+                    <span className="text-sm font-black">{formatCurrency(sale.amount)}</span>
+                    <span className="text-[10px] font-bold text-slate-500">{sale.date} {sale.time}</span>
                   </div>
-                  <div className="flex items-center gap-2 m3-label-small text-[var(--muted-text)]">
+                  <div className="flex items-center gap-2 text-[10px] text-[var(--muted-text)] font-bold">
                     <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{t(sale.paymentMethod)}</span>
                     <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full">{t(sale.source)}</span>
                     {sale.sellerName && <span className="text-slate-400">{sale.sellerName}</span>}
@@ -332,7 +361,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
           <button
             onClick={handleRegisterExtractedSales}
             disabled={loading || selectedSalesIndices.size === 0}
-            className="w-full bg-primary hover:bg-primary/90 text-white m3-label-large py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle size={20} />}
             {loading ? t('saving') : t('registerSales')}
@@ -348,7 +377,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="m3-headline-small flex-1 ml-2">{t('newSale')}</h1>
+        <h1 className="text-xl font-bold flex-1 ml-2">{t('newSale')}</h1>
         <button className="text-primary flex size-10 items-center justify-center">
           <HelpCircle size={24} />
         </button>
@@ -358,15 +387,15 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex flex-col gap-3">
             <div className="space-y-1">
-              <h3 className="m3-label-small text-primary flex items-center gap-2 tracking-wider">
+              <h3 className="text-[10px] font-bold text-primary flex items-center gap-2 tracking-wider">
                 <Sparkles size={14} /> {t('aiAssistant')}
               </h3>
-              <p className="m3-body-small text-[var(--muted-text)] leading-tight">{t('scanReceipt')}</p>
+              <p className="text-[10px] text-[var(--muted-text)] leading-tight">{t('scanReceipt')}</p>
             </div>
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={analyzing}
-              className="w-full bg-primary text-white py-2 rounded-xl m3-label-small flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full bg-primary text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
             >
               {analyzing ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
               {analyzing ? t('analyzing') : t('scan')}
@@ -382,15 +411,15 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
 
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex flex-col gap-3">
             <div className="space-y-1">
-              <h3 className="m3-label-small text-blue-500 flex items-center gap-2 tracking-wider">
+              <h3 className="text-[10px] font-bold text-blue-500 flex items-center gap-2 tracking-wider">
                 <FileUp size={14} /> {t('spreadsheet')}
               </h3>
-              <p className="m3-body-small text-[var(--muted-text)] leading-tight">{t('uploadSpreadsheet')}</p>
+              <p className="text-[10px] text-[var(--muted-text)] leading-tight">{t('uploadSpreadsheet')}</p>
             </div>
             <button 
               onClick={() => spreadsheetInputRef.current?.click()}
               disabled={extracting}
-              className="w-full bg-blue-500 text-white py-2 rounded-xl m3-label-small flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full bg-blue-500 text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
             >
               {extracting ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
               {extracting ? t('extractingData') : t('upload')}
@@ -406,12 +435,12 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         </div>
 
         <div className="space-y-4">
-          <h2 className="m3-label-small tracking-widest text-primary">{t('saleDetails')}</h2>
+          <h2 className="text-[10px] font-bold tracking-widest text-primary">{t('saleDetails')}</h2>
           
           <div className="space-y-6">
             {/* Seller Selection */}
             <div className="space-y-1.5">
-              <label className="m3-label-medium text-slate-500">{t('seller')}</label>
+              <label className="text-xs font-bold text-slate-500">{t('seller')}</label>
               <select 
                 value={sellerId}
                 onChange={(e) => {
@@ -419,7 +448,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                   setSellerId(e.target.value);
                   if (s) setSellerName(s.name);
                 }}
-                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl h-12 px-4 m3-body-medium focus:border-primary outline-none"
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl h-12 px-4 text-sm font-bold focus:border-primary outline-none"
               >
                 <option value="">{t('selectSeller')}</option>
                 {sellers.map(s => (
@@ -428,9 +457,31 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
               </select>
             </div>
 
+            {/* Date and Time Selection */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500">{t('date')}</label>
+                <input 
+                  type="date"
+                  value={saleDate}
+                  onChange={(e) => setSaleDate(e.target.value)}
+                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl h-12 px-4 text-sm font-bold focus:border-primary outline-none"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500">{t('time')}</label>
+                <input 
+                  type="time"
+                  value={saleTime}
+                  onChange={(e) => setSaleTime(e.target.value)}
+                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl h-12 px-4 text-sm font-bold focus:border-primary outline-none"
+                />
+              </div>
+            </div>
+
             {/* Sale Source */}
             <div className="space-y-1.5">
-              <label className="m3-label-medium text-slate-500">{t('saleSource')}</label>
+              <label className="text-xs font-bold text-slate-500">{t('saleSource')}</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: 'physical-store', label: t('physicalStore'), icon: Store },
@@ -441,7 +492,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                     key={item.id}
                     onClick={() => setSource(item.id as SaleSource)}
                     className={cn(
-                      "flex flex-col items-center gap-2 py-3 rounded-xl border m3-label-small transition-all",
+                      "flex flex-col items-center gap-2 py-3 rounded-xl border text-[10px] font-bold transition-all",
                       source === item.id 
                         ? "bg-primary/10 border-primary text-primary" 
                         : "bg-[var(--card-bg)] border-[var(--border-color)] text-slate-400"
@@ -455,7 +506,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="m3-label-medium text-slate-500">{t('paymentMethod')}</label>
+              <label className="text-xs font-bold text-slate-500">{t('paymentMethod')}</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { id: 'cash', label: t('cash'), icon: Banknote },
@@ -464,62 +515,81 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                   { id: 'pix', label: t('pix'), icon: QrCode },
                   { id: 'payment-link', label: t('paymentLink'), icon: LinkIcon },
                   { id: 'exchange-voucher', label: t('exchangeVoucher'), icon: Ticket },
-                ].map((method) => (
-                  <button
-                    key={method.id}
-                    onClick={() => togglePaymentMethod(method.id as PaymentMethod)}
-                    className={cn(
-                      "flex items-center justify-center gap-2 py-3 rounded-xl border m3-label-small capitalize transition-all",
-                      selectedMethods.includes(method.id as PaymentMethod) 
-                        ? "bg-primary/10 border-primary text-primary" 
-                        : "bg-[var(--card-bg)] border-[var(--border-color)] text-slate-400"
-                    )}
-                  >
-                    <method.icon size={14} className={selectedMethods.includes(method.id as PaymentMethod) ? "opacity-100" : "opacity-50"} />
-                    {method.label}
-                  </button>
-                ))}
+                ].map((method) => {
+                  const isSelected = payments.some(p => p.method === method.id);
+                  const count = payments.filter(p => p.method === method.id).length;
+                  const multiAllowed = ['credit', 'debit', 'pix'].includes(method.id);
+
+                  return (
+                    <button
+                      key={method.id}
+                      onClick={() => togglePaymentMethod(method.id as PaymentMethod)}
+                      className={cn(
+                        "relative flex items-center justify-center gap-2 py-3 rounded-xl border text-[10px] font-bold capitalize transition-all",
+                        isSelected 
+                          ? "bg-primary/10 border-primary text-primary" 
+                          : "bg-[var(--card-bg)] border-[var(--border-color)] text-slate-400"
+                      )}
+                    >
+                      <method.icon size={14} className={isSelected ? "opacity-100" : "opacity-50"} />
+                      {method.label}
+                      {multiAllowed && count > 0 && (
+                        <span className="absolute -top-2 -right-2 size-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px]">
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Payment Inputs */}
             <div className="space-y-4">
-              {selectedMethods.map((method) => (
-                <div key={method} className="space-y-2">
+              {payments.map((payment, index) => (
+                <div key={payment.id} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="m3-label-medium text-slate-500 flex items-center gap-2">
-                      {method === 'cash' && <Banknote size={14} />}
-                      {method === 'credit' && <CreditCard size={14} />}
-                      {method === 'debit' && <Smartphone size={14} />}
-                      {method === 'pix' && <QrCode size={14} />}
-                      {method === 'payment-link' && <LinkIcon size={14} />}
-                      {method === 'exchange-voucher' && <Ticket size={14} />}
-                      {t(method)}
+                    <label className="text-xs font-bold text-slate-500 flex items-center gap-2">
+                      {payment.method === 'cash' && <Banknote size={14} />}
+                      {payment.method === 'credit' && <CreditCard size={14} />}
+                      {payment.method === 'debit' && <Smartphone size={14} />}
+                      {payment.method === 'pix' && <QrCode size={14} />}
+                      {payment.method === 'payment-link' && <LinkIcon size={14} />}
+                      {payment.method === 'exchange-voucher' && <Ticket size={14} />}
+                      {t(payment.method)} {['credit', 'debit', 'pix'].includes(payment.method) && payments.filter(p => p.method === payment.method).length > 1 ? `#${payments.filter(p => p.method === payment.method).indexOf(payment) + 1}` : ''}
                     </label>
+                    {payments.length > 1 && (
+                      <button 
+                        onClick={() => removePayment(payment.id)}
+                        className="text-red-500 hover:bg-red-500/10 p-1 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold text-xl">{currencySymbol}</span>
                     <input
                       type="number"
-                      value={methodAmounts[method] || ''}
-                      onChange={(e) => setMethodAmounts(prev => ({ ...prev, [method]: e.target.value }))}
+                      value={payment.amount}
+                      onChange={(e) => updatePaymentAmount(payment.id, e.target.value)}
                       placeholder="0,00"
-                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-16 pl-10 pr-4 m3-headline-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-16 pl-10 pr-4 text-2xl font-black focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                     />
                   </div>
 
                   {/* Cash Details Section inside the specific method input area if it's cash */}
-                  {method === 'cash' && (
+                  {payment.method === 'cash' && (
                     <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-4 mt-2">
                       <div className="flex items-center gap-2 text-primary">
                         <Banknote size={18} />
-                        <h3 className="m3-label-small tracking-wider">{t('cashBreakdown')}</h3>
+                        <h3 className="text-xs font-bold tracking-wider">{t('cashBreakdown')}</h3>
                       </div>
                       <div className="grid grid-cols-1 gap-3">
-                        <p className="m3-label-small text-slate-500 px-2">{t('bills')}</p>
+                        <p className="text-[10px] font-bold text-slate-500 px-2">{t('bills')}</p>
                         {bills.map(val => (
                           <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
-                            <span className="m3-title-small">{formatCurrency(val)}</span>
+                            <span className="text-sm font-bold">{formatCurrency(val)}</span>
                             <div className="flex items-center gap-4">
                               <button 
                                 onClick={() => handleBillChange(val, -1)}
@@ -527,7 +597,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                               >
                                 <Minus size={16} />
                               </button>
-                              <span className="w-8 text-center m3-title-medium">{billQuantities[val] || 0}</span>
+                              <span className="w-8 text-center font-black">{billQuantities[val] || 0}</span>
                               <button 
                                 onClick={() => handleBillChange(val, 1)}
                                 className="size-8 rounded-lg bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
@@ -538,10 +608,10 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                           </div>
                         ))}
 
-                        <p className="m3-label-small text-slate-500 px-2 mt-2">{t('coins')}</p>
+                        <p className="text-[10px] font-bold text-slate-500 px-2 mt-2">{t('coins')}</p>
                         {coins.map(val => (
                           <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
-                            <span className="m3-title-small">{formatCurrency(val)}</span>
+                            <span className="text-sm font-bold">{formatCurrency(val)}</span>
                             <div className="flex items-center gap-4">
                               <button 
                                 onClick={() => handleCoinChange(val, -1)}
@@ -549,7 +619,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                               >
                                 <Minus size={16} />
                               </button>
-                              <span className="w-8 text-center m3-title-medium">{coinQuantities[val] || 0}</span>
+                              <span className="w-8 text-center font-black">{coinQuantities[val] || 0}</span>
                               <button 
                                 onClick={() => handleCoinChange(val, 1)}
                                 className="size-8 rounded-lg bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
@@ -567,10 +637,10 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             </div>
 
             {/* Total Summary */}
-            {selectedMethods.length > 1 && (
+            {payments.length > 1 && (
               <div className="bg-primary/5 border border-primary/10 p-4 rounded-2xl flex justify-between items-center">
-                <span className="m3-label-medium text-[var(--muted-text)]">{t('totalAmount')}</span>
-                <span className="m3-title-large text-primary">{formatCurrency(totalAmount)}</span>
+                <span className="text-xs font-bold text-[var(--muted-text)]">{t('totalAmount')}</span>
+                <span className="text-xl font-black text-primary">{formatCurrency(totalAmount)}</span>
               </div>
             )}
           </div>
@@ -582,7 +652,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-2"
           >
-            <h3 className="m3-label-small text-primary tracking-widest">{t('achievementUnlocked')}</h3>
+            <h3 className="text-xs font-bold text-primary tracking-widest">{t('achievementUnlocked')}</h3>
             <img src={motivationImage} className="w-full rounded-2xl shadow-2xl border border-white/10" alt={t('motivationalImage')} referrerPolicy="no-referrer" />
           </motion.div>
         )}
@@ -592,7 +662,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         <button
           onClick={handleSubmit}
           disabled={loading || totalAmount <= 0}
-          className="w-full bg-primary hover:bg-primary/90 text-white m3-label-large py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle size={20} />}
           {loading ? t('saving') : t('confirmSale')}

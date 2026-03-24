@@ -213,16 +213,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
 
       <div className="flex gap-4">
         <div className="flex-1 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-2">
-          <p className="text-slate-400 m3-label-small tracking-wider">{t('currentSales')}</p>
-          <p className="m3-headline-medium">{formatCurrency(totalSales)}</p>
+          <p className="text-slate-400 m3-label-medium tracking-wider">{t('currentSales')}</p>
+          <p className="m3-headline-small">{formatCurrency(totalSales)}</p>
           <div className="flex items-center gap-1 text-emerald-400 m3-label-small">
             <TrendingUp size={14} />
             <span>+{growth}%</span>
           </div>
         </div>
         <div className="flex-1 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-2">
-          <p className="text-slate-400 m3-label-small tracking-wider">{t('remaining')}</p>
-          <p className="m3-headline-medium">{formatCurrency(remaining)}</p>
+          <p className="text-slate-400 m3-label-medium tracking-wider">{t('remaining')}</p>
+          <p className="m3-headline-small">{formatCurrency(remaining)}</p>
           <div className="flex items-center gap-1 text-rose-400 m3-label-small">
             <TrendingDown size={14} />
             <span>-5.2%</span>
@@ -305,8 +305,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
             </ResponsiveContainer>
             
             <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-slate-500 m3-label-small">{t('total')}</span>
-              <span className="m3-headline-small">{formatCurrency(totalSales)}</span>
+              <span className="text-slate-500 m3-label-medium">{t('total')}</span>
+              <span className="m3-title-large">{formatCurrency(totalSales)}</span>
             </div>
           </div>
 
@@ -336,7 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
           </div>
           <div className="flex-1">
             <p className="m3-title-medium">{t('monthlyGoal')}</p>
-            <p className="text-slate-500 m3-body-small">
+            <p className="text-slate-500 m3-body-medium">
               {Math.round((sales.filter(s => isSameWeek(s.timestamp?.toDate() || new Date(), now, { weekStartsOn: 0 }) || true).reduce((acc, s) => {
                 const d = s.timestamp?.toDate() || new Date();
                 return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() ? acc + s.amount : acc;

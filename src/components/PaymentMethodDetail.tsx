@@ -214,7 +214,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-6 space-y-4 shadow-xl shadow-black/5">
           <div className="flex items-center gap-3 text-primary">
             <Icon size={24} />
-            <h2 className="m3-label-small tracking-widest">{t('summary')}</h2>
+            <h2 className="m3-title-small tracking-widest">{t('summary')}</h2>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
@@ -234,8 +234,8 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                   <span className="m3-title-large text-emerald-500">+{formatCurrency(totalReforcos)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-4">
-                  <span className="m3-title-small text-primary tracking-wider">{t('calculatedCash')}</span>
-                  <span className="m3-headline-medium text-primary">{formatCurrency(netCash)}</span>
+                  <span className="m3-title-medium text-primary tracking-wider">{t('calculatedCash')}</span>
+                  <span className="m3-headline-small text-primary">{formatCurrency(netCash)}</span>
                 </div>
               </>
             )}
@@ -247,12 +247,12 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-2">
               <Banknote size={18} className="text-primary" />
-              <h3 className="m3-label-small tracking-widest text-primary">{t('cashBreakdown')}</h3>
+              <h3 className="m3-title-small tracking-widest text-primary">{t('cashBreakdown')}</h3>
             </div>
 
             <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl overflow-hidden">
               <div className="p-4 bg-white/5 border-b border-[var(--border-color)]">
-                <p className="m3-label-small text-slate-500 tracking-widest">{t('bills')}</p>
+                <p className="m3-label-medium text-slate-500 tracking-widest">{t('bills')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
                 {availableBills.map(val => {
@@ -275,7 +275,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
               </div>
 
               <div className="p-4 bg-white/5 border-y border-[var(--border-color)]">
-                <p className="m3-label-small text-slate-500 tracking-widest">{t('coins')}</p>
+                <p className="m3-label-medium text-slate-500 tracking-widest">{t('coins')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
                 {availableCoins.map(val => {

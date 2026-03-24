@@ -119,10 +119,10 @@ export const CashMovement: React.FC<CashMovementProps> = ({ type, onBack, onSucc
           <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-4">
             <div className="flex items-center gap-2 text-primary">
               <Banknote size={18} />
-              <h3 className="m3-label-small tracking-wider">{t('cashBreakdown')}</h3>
+              <h3 className="m3-title-small tracking-wider">{t('cashBreakdown')}</h3>
             </div>
             <div className="grid grid-cols-1 gap-3">
-              <p className="m3-label-small text-slate-500 px-2">{t('bills')}</p>
+              <p className="m3-label-medium text-slate-500 px-2">{t('bills')}</p>
               {bills.map(val => (
                 <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
                   <span className="m3-title-small">{formatCurrency(val)}</span>
@@ -144,7 +144,7 @@ export const CashMovement: React.FC<CashMovementProps> = ({ type, onBack, onSucc
                 </div>
               ))}
 
-              <p className="m3-label-small text-slate-500 px-2 mt-2">{t('coins')}</p>
+              <p className="m3-label-medium text-slate-500 px-2 mt-2">{t('coins')}</p>
               {coins.map(val => (
                 <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
                   <span className="m3-title-small">{formatCurrency(val)}</span>

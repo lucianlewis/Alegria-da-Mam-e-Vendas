@@ -254,7 +254,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
         
         {/* Date Selector */}
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-2">
-          <label className="m3-label-small text-slate-500 px-2 flex items-center gap-2">
+          <label className="m3-label-medium text-slate-500 px-2 flex items-center gap-2">
             {t('sessionDate')}
           </label>
           <input
@@ -271,10 +271,10 @@ export const CashSession: React.FC<CashSessionProps> = ({
               <Banknote size={24} />
             </div>
             <div>
-              <h2 className="m3-headline-small tracking-tight">
+              <h2 className="m3-title-large tracking-tight">
                 {mode === 'closing' ? t('closeCash') : t('openCash')}
               </h2>
-              <p className="m3-label-small text-slate-500 tracking-widest">
+              <p className="m3-label-medium text-slate-500 tracking-widest">
                 {mode === 'closing' ? t('closingAmount') : t('openingAmount')}
               </p>
             </div>
@@ -282,7 +282,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
 
           <div className="space-y-4 pt-4">
             <div className="space-y-1.5">
-              <label className="m3-label-small text-slate-500 px-2">{t('bills')}</label>
+              <label className="m3-label-medium text-slate-500 px-2">{t('bills')}</label>
               <div className="grid grid-cols-1 gap-2">
                 {bills.map(val => (
                   <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
@@ -308,7 +308,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <label className="m3-label-small text-slate-500 px-2">{t('coins')}</label>
+              <label className="m3-label-medium text-slate-500 px-2">{t('coins')}</label>
               <div className="grid grid-cols-1 gap-2">
                 {coins.map(val => (
                   <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
@@ -336,12 +336,12 @@ export const CashSession: React.FC<CashSessionProps> = ({
             <div className="pt-4 border-t border-white/10 space-y-4">
               {mode === 'closing' && (
                 <div className="space-y-4 pt-2">
-                  <h3 className="m3-label-small text-slate-500 tracking-widest px-2">
+                  <h3 className="m3-title-small text-slate-500 tracking-widest px-2">
                     {t('totalsByPaymentMethod')}
                   </h3>
                   <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-1.5">
-                      <label className="m3-label-small text-slate-500 px-2 flex justify-between">
+                      <label className="m3-label-medium text-slate-500 px-2 flex justify-between">
                         <span>{t('credit')}</span>
                         {expectedAmounts['credit'] !== undefined && (
                           <span className="text-primary/60 italic lowercase m3-body-small">{t('expected')}: {formatCurrency(expectedAmounts['credit'])}</span>
@@ -356,7 +356,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="m3-label-small text-slate-500 px-2 flex justify-between">
+                      <label className="m3-label-medium text-slate-500 px-2 flex justify-between">
                         <span>{t('debit')}</span>
                         {expectedAmounts['debit'] !== undefined && (
                           <span className="text-primary/60 italic lowercase m3-body-small">{t('expected')}: {formatCurrency(expectedAmounts['debit'])}</span>
@@ -371,7 +371,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="m3-label-small text-slate-500 px-2 flex justify-between">
+                      <label className="m3-label-medium text-slate-500 px-2 flex justify-between">
                         <span>{t('pix')}</span>
                         {expectedAmounts['pix'] !== undefined && (
                           <span className="text-primary/60 italic lowercase m3-body-small">{t('expected')}: {formatCurrency(expectedAmounts['pix'])}</span>
@@ -386,7 +386,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="m3-label-small text-slate-500 px-2 flex justify-between">
+                      <label className="m3-label-medium text-slate-500 px-2 flex justify-between">
                         <span>{t('paymentLink')}</span>
                         {expectedAmounts['payment-link'] !== undefined && (
                           <span className="text-primary/60 italic lowercase m3-body-small">{t('expected')}: {formatCurrency(expectedAmounts['payment-link'])}</span>
@@ -401,7 +401,7 @@ export const CashSession: React.FC<CashSessionProps> = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="m3-label-small text-slate-500 px-2 flex justify-between">
+                      <label className="m3-label-medium text-slate-500 px-2 flex justify-between">
                         <span>{t('exchangeVoucher')}</span>
                         {expectedAmounts['exchange-voucher'] !== undefined && (
                           <span className="text-primary/60 italic lowercase m3-body-small">{t('expected')}: {formatCurrency(expectedAmounts['exchange-voucher'])}</span>
@@ -435,14 +435,14 @@ export const CashSession: React.FC<CashSessionProps> = ({
               )}
 
               <div className="flex justify-between items-center">
-                <span className="m3-label-small text-slate-500">{t('totalCash')}</span>
-                <span className="m3-headline-medium text-primary">
+                <span className="m3-label-medium text-slate-500">{t('totalCash')}</span>
+                <span className="m3-headline-small text-primary">
                   {formatCurrency(parseFloat(amount || '0'))}
                 </span>
               </div>
 
               <div className="space-y-1.5">
-                <label className="m3-label-small text-slate-500 px-2">{t('observations')}</label>
+                <label className="m3-label-medium text-slate-500 px-2">{t('observations')}</label>
                 <textarea
                   value={observations}
                   onChange={(e) => setObservations(e.target.value)}

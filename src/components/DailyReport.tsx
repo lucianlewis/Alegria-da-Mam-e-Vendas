@@ -168,7 +168,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
 
         {/* Sales Summary */}
         <section className="rounded-[32px] p-6 space-y-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border, boxShadow: colors.shadow }}>
-          <h3 className="m3-label-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('salesSummary')}</h3>
+          <h3 className="m3-title-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('salesSummary')}</h3>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -181,22 +181,22 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
             </div>
             <div className="pt-4 border-t flex justify-between items-end" style={{ borderColor: colors.border }}>
               <span className="m3-title-large" style={{ color: colors.text }}>{t('netTotal')}</span>
-              <span className="m3-headline-large" style={{ color: colors.primary }}>{formatCurrency(totalSales)}</span>
+              <span className="m3-headline-small" style={{ color: colors.primary }}>{formatCurrency(totalSales)}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl p-4 space-y-1 border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
-              <p className="m3-label-small tracking-wider" style={{ color: colors.muted }}>{t('transactions')}</p>
-              <p className="m3-headline-small" style={{ color: colors.text }}>{transactions}</p>
+              <p className="m3-label-medium tracking-wider" style={{ color: colors.muted }}>{t('transactions')}</p>
+              <p className="m3-title-large" style={{ color: colors.text }}>{transactions}</p>
               <div className="flex items-center gap-1 m3-label-small" style={{ color: colors.success }}>
                 <TrendingUp size={10} />
                 <span>+5% {t('vs')} {t('yesterday')}</span>
               </div>
             </div>
             <div className="rounded-2xl p-4 space-y-1 border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
-              <p className="m3-label-small tracking-wider" style={{ color: colors.muted }}>{t('averageTicket')}</p>
-              <p className="m3-headline-small" style={{ color: colors.text }}>{formatCurrency(averageTicket)}</p>
+              <p className="m3-label-medium tracking-wider" style={{ color: colors.muted }}>{t('averageTicket')}</p>
+              <p className="m3-title-large" style={{ color: colors.text }}>{formatCurrency(averageTicket)}</p>
               <div className="flex items-center gap-1 m3-label-small" style={{ color: colors.success }}>
                 <TrendingUp size={10} />
                 <span>+7% {t('vs')} {t('yesterday')}</span>
@@ -207,7 +207,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
 
         {/* Sales by Source */}
         <section className="rounded-[32px] p-6 space-y-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border, boxShadow: colors.shadow }}>
-          <h3 className="m3-label-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('salesBySource')}</h3>
+          <h3 className="m3-title-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('salesBySource')}</h3>
           
           <div className="space-y-4">
             {[
@@ -225,7 +225,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
 
         {/* Cash Reconciliation */}
         <section className="rounded-[32px] p-6 space-y-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border, boxShadow: colors.shadow }}>
-          <h3 className="m3-label-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('cashReconciliation')}</h3>
+          <h3 className="m3-title-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('cashReconciliation')}</h3>
           
           <div className="space-y-6">
             <div className="space-y-2">
@@ -325,7 +325,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
 
         {/* Individual Sales List */}
         <section className="rounded-[32px] p-6 space-y-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border, boxShadow: colors.shadow }}>
-          <h3 className="m3-label-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('recentSales')}</h3>
+          <h3 className="m3-title-small tracking-[0.2em]" style={{ color: colors.primary }}>{t('recentSales')}</h3>
           
           <div className="space-y-3">
             {sales.sort((a, b) => {
@@ -419,7 +419,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
 
         {/* Daily Goal */}
         <section className="rounded-[32px] p-6 space-y-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border, boxShadow: colors.shadow }}>
-          <h3 className="m3-label-small tracking-[0.2em]" style={{ color: colors.success }}>{t('dailyGoal')}</h3>
+          <h3 className="m3-title-small tracking-[0.2em]" style={{ color: colors.success }}>{t('dailyGoal')}</h3>
           
           <div className="flex flex-col items-center py-4 space-y-6">
             <div className="relative size-48">
@@ -443,8 +443,8 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="m3-headline-large" style={{ color: colors.text }}>{actualProgress.toFixed(0)}%</span>
-                <span className="m3-label-small tracking-widest" style={{ color: colors.muted }}>{t('achieved')}</span>
+                <span className="m3-headline-small" style={{ color: colors.text }}>{actualProgress.toFixed(0)}%</span>
+                <span className="m3-label-medium tracking-widest" style={{ color: colors.muted }}>{t('achieved')}</span>
               </div>
             </div>
 
