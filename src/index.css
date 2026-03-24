@@ -63,7 +63,7 @@
     --border-color: rgba(255, 255, 255, 0.1);
     --muted-text: #94a3b8;
     --nav-bg: #1a1a1a;
-    --nav-icon-unselected: #FFF5F7;
+    --nav-icon-unselected: #94a3b8;
   }
 
   body {
@@ -72,6 +72,25 @@
     @apply font-sans transition-colors duration-300;
     -webkit-tap-highlight-color: transparent;
   }
+}
+
+@layer components {
+  /* Material Design 3 Typography Hierarchy */
+  .m3-headline-large { @apply text-[32px] font-bold leading-9 tracking-normal; }
+  .m3-headline-medium { @apply text-[28px] font-bold leading-8 tracking-normal; }
+  .m3-headline-small { @apply text-[24px] font-bold leading-8 tracking-normal; }
+
+  .m3-title-large { @apply text-[22px] font-bold leading-7 tracking-normal; }
+  .m3-title-medium { @apply text-[16px] font-bold leading-6 tracking-[0.15px]; }
+  .m3-title-small { @apply text-[14px] font-bold leading-5 tracking-[0.1px]; }
+
+  .m3-body-large { @apply text-[16px] font-normal leading-6 tracking-[0.5px]; }
+  .m3-body-medium { @apply text-[14px] font-normal leading-5 tracking-[0.25px]; }
+  .m3-body-small { @apply text-[12px] font-normal leading-4 tracking-[0.4px]; }
+
+  .m3-label-large { @apply text-[14px] font-bold leading-5 tracking-[0.1px]; }
+  .m3-label-medium { @apply text-[12px] font-bold leading-4 tracking-[0.5px]; }
+  .m3-label-small { @apply text-[11px] font-bold leading-4 tracking-[0.5px]; }
 }
 
 .pie-chart-gradient {

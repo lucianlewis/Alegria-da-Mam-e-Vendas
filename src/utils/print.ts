@@ -58,7 +58,6 @@ export const printContent = (title: string, contentHtml: string) => {
       .section-title {
         font-size: 12px;
         font-weight: 800;
-        text-transform: uppercase;
         letter-spacing: 1px;
         color: #64748b;
         margin-bottom: 8px;
@@ -83,7 +82,6 @@ export const printContent = (title: string, contentHtml: string) => {
       .info-label {
         font-size: 10px;
         font-weight: 800;
-        text-transform: uppercase;
         color: #64748b;
         margin-bottom: 4px;
       }
@@ -107,7 +105,6 @@ export const printContent = (title: string, contentHtml: string) => {
         font-weight: 600;
         color: #94a3b8;
         margin-top: 40px;
-        text-transform: uppercase;
         letter-spacing: 1px;
       }
       @media print {

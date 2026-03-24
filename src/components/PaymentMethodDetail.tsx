@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Banknote, CreditCard, Smartphone, QrCode, TrendingUp, TrendingDown, Info, FileText, Trash2, Loader2, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Banknote, CreditCard, Smartphone, QrCode, TrendingUp, TrendingDown, Info, FileText, Trash2, Loader2, Calendar, Clock, Link as LinkIcon, Ticket } from 'lucide-react';
 import { Sale, CashMovement, PaymentMethod } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { jsPDF } from 'jspdf';
@@ -29,8 +29,8 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
     credit: CreditCard,
     debit: Smartphone,
     pix: QrCode,
-    'payment-link': Smartphone,
-    'exchange-voucher': Banknote,
+    'payment-link': LinkIcon,
+    'exchange-voucher': Ticket,
   };
 
   const Icon = methodIcons[method as keyof typeof methodIcons] || Info;
@@ -101,7 +101,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
     if (method === 'cash') {
       cashBreakdownHtml = `
         <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #ff0080;">
-          <h2 style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #ff0080; margin-bottom: 16px;">${t('cashBreakdown')}</h2>
+          <h2 style="font-size: 14px; font-weight: 800; color: #ff0080; margin-bottom: 16px;">${t('cashBreakdown')}</h2>
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
             <span style="font-weight: 600; color: #64748b; font-size: 12px;">${t('totalSalesByMethod')}:</span>
             <span style="font-weight: 800; color: #1a1a1a; font-size: 12px;">${formatCurrency(totalSales)}</span>
@@ -137,7 +137,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
       </div>
       
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; padding: 24px; margin-bottom: 24px;">
-        <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 4px;">${t(method)} - ${t('paymentMethodDetail')}</div>
+        <div style="font-size: 12px; font-weight: 800; letter-spacing: 1px; color: #64748b; margin-bottom: 4px;">${t(method)} - ${t('paymentMethodDetail')}</div>
         <div style="font-size: 18px; font-weight: 800; color: #1a1a1a; margin-bottom: 24px;">${date}</div>
         
         <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
@@ -147,7 +147,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
         ${cashBreakdownHtml}
       </div>
 
-      <div style="text-align: center; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 40px; text-transform: uppercase; letter-spacing: 1px;">
+      <div style="text-align: center; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 40px; letter-spacing: 1px;">
         ${new Date().toLocaleString()} • PipBase App
       </div>
     `;
@@ -196,7 +196,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
         <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="text-xl font-bold flex-1 ml-2">
+        <h1 className="m3-headline-small flex-1 ml-2">
           {method === 'payment-link' ? t('paymentLink') : 
            method === 'exchange-voucher' ? t('exchangeVoucher') : 
            t(method)} - {t('paymentMethodDetail')}
@@ -214,28 +214,28 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
         <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-6 space-y-4 shadow-xl shadow-black/5">
           <div className="flex items-center gap-3 text-primary">
             <Icon size={24} />
-            <h2 className="text-xs font-bold uppercase tracking-widest">{t('summary')}</h2>
+            <h2 className="m3-label-small tracking-widest">{t('summary')}</h2>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
             <div className="flex justify-between items-center py-2 border-b border-[var(--border-color)]/50">
-              <span className="text-sm font-bold text-slate-500">{t('totalSalesByMethod')}</span>
-              <span className="text-lg font-black">{formatCurrency(totalSales)}</span>
+              <span className="m3-body-medium text-slate-500">{t('totalSalesByMethod')}</span>
+              <span className="m3-title-large">{formatCurrency(totalSales)}</span>
             </div>
 
             {method === 'cash' && (
               <>
                 <div className="flex justify-between items-center py-2 border-b border-[var(--border-color)]/50">
-                  <span className="text-sm font-bold text-slate-500">{t('totalSangrias')}</span>
-                  <span className="text-lg font-black text-red-500">-{formatCurrency(totalSangrias)}</span>
+                  <span className="m3-body-medium text-slate-500">{t('totalSangrias')}</span>
+                  <span className="m3-title-large text-red-500">-{formatCurrency(totalSangrias)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-[var(--border-color)]/50">
-                  <span className="text-sm font-bold text-slate-500">{t('totalReforcos')}</span>
-                  <span className="text-lg font-black text-emerald-500">+{formatCurrency(totalReforcos)}</span>
+                  <span className="m3-body-medium text-slate-500">{t('totalReforcos')}</span>
+                  <span className="m3-title-large text-emerald-500">+{formatCurrency(totalReforcos)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-4">
-                  <span className="text-sm font-black text-primary uppercase tracking-wider">{t('calculatedCash')}</span>
-                  <span className="text-2xl font-black text-primary">{formatCurrency(netCash)}</span>
+                  <span className="m3-title-small text-primary tracking-wider">{t('calculatedCash')}</span>
+                  <span className="m3-headline-medium text-primary">{formatCurrency(netCash)}</span>
                 </div>
               </>
             )}
@@ -247,12 +247,12 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-2">
               <Banknote size={18} className="text-primary" />
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">{t('cashBreakdown')}</h3>
+              <h3 className="m3-label-small tracking-widest text-primary">{t('cashBreakdown')}</h3>
             </div>
 
             <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl overflow-hidden">
               <div className="p-4 bg-white/5 border-b border-[var(--border-color)]">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('bills')}</p>
+                <p className="m3-label-small text-slate-500 tracking-widest">{t('bills')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
                 {availableBills.map(val => {
@@ -263,11 +263,11 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                         <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
                           {val}
                         </div>
-                        <span className="text-sm font-bold">{formatCurrency(val)}</span>
+                        <span className="m3-body-medium">{formatCurrency(val)}</span>
                       </div>
                       <div className="flex items-center gap-6">
-                        <span className="text-xs font-bold text-slate-500">x{qty}</span>
-                        <span className="text-sm font-black w-20 text-right">{formatCurrency(val * qty)}</span>
+                        <span className="m3-label-small text-slate-500">x{qty}</span>
+                        <span className="m3-title-small w-20 text-right">{formatCurrency(val * qty)}</span>
                       </div>
                     </div>
                   );
@@ -275,7 +275,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
               </div>
 
               <div className="p-4 bg-white/5 border-y border-[var(--border-color)]">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('coins')}</p>
+                <p className="m3-label-small text-slate-500 tracking-widest">{t('coins')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
                 {availableCoins.map(val => {
@@ -286,11 +286,11 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                         <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-bold text-[10px]">
                           {val}
                         </div>
-                        <span className="text-sm font-bold">{formatCurrency(val)}</span>
+                        <span className="m3-body-medium">{formatCurrency(val)}</span>
                       </div>
                       <div className="flex items-center gap-6">
-                        <span className="text-xs font-bold text-slate-500">x{qty}</span>
-                        <span className="text-sm font-black w-20 text-right">{formatCurrency(val * qty)}</span>
+                        <span className="m3-label-small text-slate-500">x{qty}</span>
+                        <span className="m3-title-small w-20 text-right">{formatCurrency(val * qty)}</span>
                       </div>
                     </div>
                   );
@@ -298,8 +298,8 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
               </div>
               
               <div className="p-6 bg-primary/5 flex justify-between items-center">
-                <span className="text-xs font-black uppercase tracking-widest text-primary">{t('total')}</span>
-                <span className="text-xl font-black text-primary">{formatCurrency(netCash)}</span>
+                <span className="m3-label-small tracking-widest text-primary">{t('total')}</span>
+                <span className="m3-headline-small text-primary">{formatCurrency(netCash)}</span>
               </div>
             </div>
           </div>
@@ -307,7 +307,7 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
 
         {/* Sales List for this method */}
         <div className="space-y-4">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary px-2">{t('recentSales')}</h3>
+          <h3 className="m3-label-small tracking-widest text-primary px-2">{t('recentSales')}</h3>
           <div className="space-y-3">
             {methodSales.map((sale, idx) => (
               <div key={sale.id || idx} className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 flex justify-between items-center">
@@ -316,14 +316,14 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                     <Icon size={20} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold">{sale.sellerName}</p>
-                    <p className="text-[10px] text-slate-500">{t(sale.source)}</p>
+                    <p className="m3-body-medium">{sale.sellerName}</p>
+                    <p className="m3-label-small text-slate-500">{t(sale.source)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-sm font-black">{formatCurrency(sale.amount)}</p>
-                    <p className="text-[10px] text-slate-500">
+                    <p className="m3-title-small">{formatCurrency(sale.amount)}</p>
+                    <p className="m3-label-small text-slate-500">
                       {sale.timestamp?.toDate ? sale.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </p>
                   </div>
@@ -363,20 +363,20 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
                 <Trash2 size={32} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold">{t('confirmDelete')}</h3>
-                <p className="text-sm text-slate-500">{t('confirmDeleteSale')}</p>
+                <h3 className="m3-title-large">{t('confirmDelete')}</h3>
+                <p className="m3-body-medium text-slate-500">{t('confirmDeleteSale')}</p>
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
-                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-xs font-bold uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 m3-label-medium tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                 >
                   {t('cancel')}
                 </button>
                 <button
                   onClick={() => handleDeleteSale(showDeleteConfirm)}
                   disabled={isDeleting}
-                  className="flex-1 py-3 rounded-2xl bg-rose-500 text-white text-xs font-bold uppercase tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center"
+                  className="flex-1 py-3 rounded-2xl bg-rose-500 text-white m3-label-medium tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center"
                 >
                   {isDeleting ? <Loader2 className="animate-spin" size={16} /> : t('delete')}
                 </button>

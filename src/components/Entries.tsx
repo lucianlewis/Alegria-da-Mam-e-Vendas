@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Banknote, CreditCard, Smartphone, QrCode, User as UserIcon, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
+import { Banknote, CreditCard, Smartphone, QrCode, User as UserIcon, TrendingUp, TrendingDown, Minus, ChevronRight, Link as LinkIcon, Ticket } from 'lucide-react';
 import { Sale, Seller } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -19,8 +19,8 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
     credit: CreditCard,
     debit: Smartphone,
     pix: QrCode,
-    'payment-link': Smartphone,
-    'exchange-voucher': Banknote,
+    'payment-link': LinkIcon,
+    'exchange-voucher': Ticket,
   };
 
   const totalsByMethod = sales.reduce((acc, sale) => {
@@ -31,13 +31,13 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
   return (
     <div className="p-4 space-y-8">
       <header className="flex items-center justify-center py-2 relative">
-        <h2 className="text-lg font-bold">{t('entries')}</h2>
+        <h2 className="m3-title-large">{t('entries')}</h2>
       </header>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">{t('totalsByPaymentMethod')}</h3>
-          <span className="text-slate-500 text-[10px] font-bold uppercase">{t('dailyView')}</span>
+          <h3 className="m3-label-small tracking-widest text-primary">{t('totalsByPaymentMethod')}</h3>
+          <span className="text-slate-500 m3-label-small">{t('dailyView')}</span>
         </div>
         
         <div className="grid grid-cols-2 gap-3">
@@ -54,8 +54,8 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
               >
                 <Icon size={20} className="text-primary group-hover:scale-110 transition-transform" />
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">{label}</p>
-                  <p className="text-xl font-black">{formatCurrency(totalsByMethod[method] || 0)}</p>
+                  <p className="m3-label-small text-slate-500 tracking-tight">{label}</p>
+                  <p className="m3-headline-small">{formatCurrency(totalsByMethod[method] || 0)}</p>
                 </div>
               </div>
             );
@@ -64,7 +64,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">{t('sellerPerformance')}</h3>
+        <h3 className="m3-label-small tracking-widest text-primary">{t('sellerPerformance')}</h3>
         <div className="space-y-3">
           {Array.from(new Set(sales.map(s => s.sellerId))).map(sellerId => {
             const sellerSales = sales.filter(s => s.sellerId === sellerId);
@@ -99,14 +99,14 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
                     <UserIcon size={20} />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold">{name}</h4>
-                    <p className="text-[10px] text-slate-500">{sellerSales.length} {t('salesToday')}</p>
+                    <h4 className="m3-title-small">{name}</h4>
+                    <p className="m3-body-small text-slate-500">{sellerSales.length} {t('salesToday')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-sm font-black">{formatCurrency(total)}</p>
-                    <div className="flex items-center justify-end gap-1 text-primary text-[10px] font-bold">
+                    <p className="m3-title-medium">{formatCurrency(total)}</p>
+                    <div className="flex items-center justify-end gap-1 text-primary m3-label-small">
                       <TrendingUp size={10} />
                       <span>+15.2%</span>
                     </div>
@@ -122,8 +122,8 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
       <div className="p-6 rounded-3xl bg-gradient-to-br from-primary to-primary/60 shadow-xl shadow-primary/20">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-white/80 text-xs font-bold uppercase tracking-widest">{t('grandTotal')}</p>
-            <h2 className="text-white text-3xl font-black">{formatCurrency(sales.reduce((acc, s) => acc + s.amount, 0))}</h2>
+            <p className="text-white/80 m3-label-small tracking-widest">{t('grandTotal')}</p>
+            <h2 className="text-white m3-headline-medium">{formatCurrency(sales.reduce((acc, s) => acc + s.amount, 0))}</h2>
           </div>
           <div className="size-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
             <TrendingUp size={28} />

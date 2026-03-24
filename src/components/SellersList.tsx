@@ -35,16 +35,16 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, sales, onBack
         <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-xl font-bold tracking-tight">{t('sellers')}</h2>
+        <h2 className="m3-headline-small tracking-tight">{t('sellers')}</h2>
         <div className="size-10"></div>
       </header>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('teamMembers')}</h3>
+          <h3 className="m3-label-small tracking-widest text-slate-500 px-2">{t('teamMembers')}</h3>
           <button 
             onClick={onAddSeller}
-            className="text-primary text-[10px] font-bold uppercase flex items-center gap-1"
+            className="text-primary m3-label-small flex items-center gap-1"
           >
             <Plus size={14} /> {t('addNew')}
           </button>
@@ -56,10 +56,10 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, sales, onBack
               <div className="size-16 rounded-full bg-[var(--card-bg)] flex items-center justify-center mx-auto text-slate-600">
                 <User size={32} />
               </div>
-              <p className="text-slate-500 text-sm">{t('noSellersYet')}</p>
+              <p className="text-slate-500 m3-body-medium">{t('noSellersYet')}</p>
               <button 
                 onClick={onAddSeller}
-                className="bg-primary text-white px-6 py-2 rounded-xl text-xs font-bold"
+                className="bg-primary text-white px-6 py-2 rounded-xl m3-label-medium"
               >
                 {t('registerFirstSeller')}
               </button>
@@ -84,13 +84,13 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, sales, onBack
                         )}
                       </div>
                       <div className="text-left">
-                        <h4 className="text-sm font-bold">{seller.name}</h4>
-                        <p className="text-[10px] text-slate-500">{t('goal')}: {formatCurrency(seller.goal)}</p>
+                        <h4 className="m3-body-medium">{seller.name}</h4>
+                        <p className="m3-label-small text-slate-500">{t('goal')}: {formatCurrency(seller.goal)}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
-                        className="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase"
+                        className="bg-primary/10 text-primary px-3 py-1.5 rounded-lg m3-label-small"
                       >
                         {t('performance')}
                       </button>
@@ -107,7 +107,7 @@ export const SellersList: React.FC<SellersListProps> = ({ sellers, sales, onBack
                   </div>
                   
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                    <div className="flex justify-between m3-label-small tracking-wider">
                       <span className="text-slate-500">{t('monthlyProgress')}</span>
                       <span className="text-primary">{progress.toFixed(1)}%</span>
                     </div>

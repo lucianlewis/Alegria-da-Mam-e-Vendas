@@ -63,7 +63,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {isFirebaseError && (
               <div className="bg-black/20 rounded-xl p-4 text-left">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Detalhes Técnicos</p>
+                <p className="text-[10px] font-bold tracking-widest text-slate-500 mb-2">Detalhes Técnicos</p>
                 <code className="text-xs text-rose-400 break-all">
                   {this.state.error?.message}
                 </code>

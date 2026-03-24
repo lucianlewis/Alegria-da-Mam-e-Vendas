@@ -9,12 +9,23 @@ export interface UserProfile {
   role: 'admin' | 'seller';
 }
 
+export interface SalePayment {
+  method: PaymentMethod;
+  amount: number;
+  cashDetails?: {
+    bills: Record<string, number>;
+    coins: Record<string, number>;
+    total: number;
+  };
+}
+
 export interface Sale {
   id?: string;
   sellerId: string;
   sellerName: string;
   amount: number;
-  paymentMethod: PaymentMethod;
+  paymentMethod: PaymentMethod; // Primary or legacy method
+  payments?: SalePayment[]; // Support for multiple payments
   source: SaleSource;
   timestamp: any; // Firestore Timestamp
   cashDetails?: {

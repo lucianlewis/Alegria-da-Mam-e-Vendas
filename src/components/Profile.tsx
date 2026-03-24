@@ -59,7 +59,7 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
   return (
     <div className="p-4 space-y-8">
       <header className="flex items-center justify-center py-2 relative">
-        <h2 className="text-lg font-bold">{t('adminProfile')}</h2>
+        <h2 className="m3-title-large">{t('adminProfile')}</h2>
       </header>
 
       <div className="flex flex-col items-center gap-6">
@@ -77,19 +77,19 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
         </div>
 
         <div className="text-center space-y-1">
-          <h3 className="text-2xl font-black tracking-tight">{user?.displayName || t('user')}</h3>
-          <p className="text-primary font-bold text-sm">@{user?.email?.split('@')[0]}</p>
-          <p className="text-slate-500 text-xs">{user?.email}</p>
+          <h3 className="m3-headline-medium tracking-tight">{user?.displayName || t('user')}</h3>
+          <p className="text-primary m3-label-large">@{user?.email?.split('@')[0]}</p>
+          <p className="text-slate-500 m3-body-small">{user?.email}</p>
         </div>
 
-        <button className="bg-primary text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
+        <button className="bg-primary text-white m3-label-large px-8 py-3 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
           {t('editProfile')}
         </button>
       </div>
 
       {sections.map((section) => (
         <div key={section.title} className="space-y-4">
-          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{section.title}</h4>
+          <h4 className="m3-label-small tracking-widest text-slate-500 px-2">{section.title}</h4>
           <div className="bg-[var(--card-bg)] rounded-3xl border border-[var(--border-color)] overflow-hidden">
             {section.items.map((item, idx) => (
               <React.Fragment key={item.label}>
@@ -106,12 +106,12 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
                       <item.icon size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-bold">{item.label}</p>
-                      {item.sub && <p className="text-[10px] text-slate-500">{item.sub}</p>}
+                      <p className="m3-title-small">{item.label}</p>
+                      {item.sub && <p className="m3-body-small text-slate-500">{item.sub}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {item.value && <span className="text-xs text-slate-500">{item.value}</span>}
+                    {item.value && <span className="m3-label-small text-slate-500">{item.value}</span>}
                     {item.toggle ? (
                       <div 
                         className={cn(
@@ -155,9 +155,9 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
                               "size-2 rounded-full",
                               language === lang.code ? "bg-primary" : "bg-slate-700"
                             )} />
-                            <span className="text-lg leading-none">{lang.flag}</span>
+                            <span className="m3-title-large leading-none">{lang.flag}</span>
                             <span className={cn(
-                              "text-sm font-medium",
+                              "m3-body-medium",
                               language === lang.code ? "text-white" : "text-slate-400"
                             )}>
                               {lang.name}
@@ -178,14 +178,14 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
       <div className="bg-[var(--card-bg)] rounded-3xl border border-[var(--border-color)] overflow-hidden">
         <button className="w-full flex items-center gap-4 p-4 text-rose-500 active:bg-rose-500/10 transition-colors border-b border-[var(--border-color)]">
           <Trash2 size={20} />
-          <span className="text-sm font-bold">{t('deleteAccount')}</span>
+          <span className="m3-label-large">{t('deleteAccount')}</span>
         </button>
         <button 
           onClick={logout}
           className="w-full flex items-center gap-4 p-4 text-rose-500 active:bg-rose-500/10 transition-colors"
         >
           <LogOut size={20} />
-          <span className="text-sm font-bold">{t('logout')}</span>
+          <span className="m3-label-large">{t('logout')}</span>
         </button>
       </div>
     </div>

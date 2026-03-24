@@ -130,7 +130,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
         <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <X size={24} />
         </button>
-        <h1 className="text-xl font-bold flex-1 text-center">{seller ? t('editSeller') : t('newSeller')}</h1>
+        <h1 className="m3-headline-small flex-1 text-center">{seller ? t('editSeller') : t('newSeller')}</h1>
         <button 
           onClick={handleSubmit}
           disabled={loading || !name || !goal}
@@ -164,65 +164,65 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
               className="hidden" 
             />
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t('changePhoto')}</p>
+          <p className="m3-label-small tracking-widest text-slate-500">{t('changePhoto')}</p>
         </div>
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('sellerName')}</label>
+            <label className="m3-label-small tracking-widest text-slate-500 px-2">{t('sellerName')}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('fullName')}
-              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 m3-body-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('contactPhone')}</label>
+            <label className="m3-label-small tracking-widest text-slate-500 px-2">{t('contactPhone')}</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder={t('phonePlaceholder')}
-              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 m3-body-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('email')}</label>
+            <label className="m3-label-small tracking-widest text-slate-500 px-2">{t('email')}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('emailPlaceholder')}
-              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 px-4 m3-body-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none text-[var(--text-color)]"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('monthlySalesGoal')}</label>
+            <label className="m3-label-small tracking-widest text-slate-500 px-2">{t('monthlySalesGoal')}</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold text-sm">{currencySymbol}</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary m3-label-large">{currencySymbol}</span>
               <input
                 type="number"
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 placeholder={t('goalPlaceholder')}
-                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-10 pr-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-10 pr-4 m3-body-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('observations')}</label>
+            <label className="m3-label-small tracking-widest text-slate-500 px-2">{t('observations')}</label>
             <textarea
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
               placeholder={t('observationsPlaceholder')}
               rows={4}
-              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 m3-body-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"
             />
           </div>
         </div>

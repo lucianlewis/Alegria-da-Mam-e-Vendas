@@ -112,7 +112,7 @@ export const Layout: React.FC<LayoutProps> = ({
                   ) : (
                     tab.icon && <tab.icon size={22} />
                   )}
-                  <span className="text-[10px] font-bold uppercase tracking-tighter leading-none">{tab.label}</span>
+                  <span className="m3-label-small tracking-tighter leading-none">{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -141,7 +141,7 @@ export const Layout: React.FC<LayoutProps> = ({
                   ) : (
                     tab.icon && <tab.icon size={22} />
                   )}
-                  <span className="text-[10px] font-bold uppercase tracking-tighter leading-none">{tab.label}</span>
+                  <span className="m3-label-small tracking-tighter leading-none">{tab.label}</span>
                 </button>
               ))}
             </div>

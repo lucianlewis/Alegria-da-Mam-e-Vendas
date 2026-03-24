@@ -136,7 +136,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
   return (
     <div className="p-4 space-y-6">
       <header className="flex items-center justify-between py-2">
-        <h2 className="text-xl font-bold tracking-tight">{t('dashboard')}</h2>
+        <h2 className="m3-headline-small">{t('dashboard')}</h2>
         <div className="flex gap-2">
           <button 
             onClick={onCashSessionClick}
@@ -160,7 +160,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
               setShowCustomPicker(false);
             }}
             className={cn(
-              "flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300",
+              "flex-1 py-3 rounded-xl m3-label-large transition-all duration-300",
               activePeriod === period && !showCustomPicker
                 ? "bg-primary text-white shadow-lg shadow-primary/20"
                 : "text-slate-400 hover:text-white"
@@ -184,7 +184,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
         >
           <div className="flex items-center gap-2">
             <Calendar size={18} />
-            <span className="text-sm font-bold">{t('custom')}</span>
+            <span className="m3-label-large">{t('custom')}</span>
           </div>
           <ChevronDown size={18} className={cn("transition-transform", showCustomPicker && "rotate-180")} />
         </button>
@@ -199,10 +199,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
             >
               <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 grid grid-cols-1 gap-3">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2">{t('selectDate')}</p>
+                  <p className="m3-label-small text-slate-500 tracking-widest px-2">{t('selectDate')}</p>
                   <input 
                     type="date" 
-                    className="w-full bg-white/5 border border-white/10 rounded-xl h-12 px-4 text-sm font-medium outline-none focus:border-primary"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl h-12 px-4 m3-body-medium outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -213,17 +213,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
 
       <div className="flex gap-4">
         <div className="flex-1 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-2">
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('currentSales')}</p>
-          <p className="text-2xl font-black">{formatCurrency(totalSales)}</p>
-          <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
+          <p className="text-slate-400 m3-label-small tracking-wider">{t('currentSales')}</p>
+          <p className="m3-headline-medium">{formatCurrency(totalSales)}</p>
+          <div className="flex items-center gap-1 text-emerald-400 m3-label-small">
             <TrendingUp size={14} />
             <span>+{growth}%</span>
           </div>
         </div>
         <div className="flex-1 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-2">
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('remaining')}</p>
-          <p className="text-2xl font-black">{formatCurrency(remaining)}</p>
-          <div className="flex items-center gap-1 text-rose-400 text-xs font-bold">
+          <p className="text-slate-400 m3-label-small tracking-wider">{t('remaining')}</p>
+          <p className="m3-headline-medium">{formatCurrency(remaining)}</p>
+          <div className="flex items-center gap-1 text-rose-400 m3-label-small">
             <TrendingDown size={14} />
             <span>-5.2%</span>
           </div>
@@ -233,8 +233,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
       {/* Sales Trend Chart */}
       <div className="bg-[var(--card-bg)] rounded-3xl p-6 border border-[var(--border-color)] shadow-xl space-y-6">
         <div>
-          <h3 className="text-lg font-bold">{t('salesTrend')}</h3>
-          <p className="text-slate-500 text-xs">{t('revenueByDay')}</p>
+          <h3 className="m3-title-large">{t('salesTrend')}</h3>
+          <p className="text-slate-500 m3-body-small">{t('revenueByDay')}</p>
         </div>
         
         <div className="h-48 w-full">
@@ -275,8 +275,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
       <div className="bg-[var(--card-bg)] rounded-3xl p-6 border border-[var(--border-color)] shadow-xl">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h3 className="text-lg font-bold">{t('salesChannels')}</h3>
-            <p className="text-slate-500 text-xs">{t('performanceByPlatform')}</p>
+            <h3 className="m3-title-large">{t('salesChannels')}</h3>
+            <p className="text-slate-500 m3-body-small">{t('performanceByPlatform')}</p>
           </div>
         </div>
         
@@ -305,8 +305,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
             </ResponsiveContainer>
             
             <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-slate-500 text-[10px] font-bold uppercase">{t('total')}</span>
-              <span className="text-xl font-black">{formatCurrency(totalSales)}</span>
+              <span className="text-slate-500 m3-label-small">{t('total')}</span>
+              <span className="m3-headline-small">{formatCurrency(totalSales)}</span>
             </div>
           </div>
 
@@ -315,9 +315,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
               <div key={channel.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="size-3 rounded-full" style={{ backgroundColor: channel.color }}></div>
-                  <span className="text-slate-300 text-sm font-medium">{channel.name}</span>
+                  <span className="text-slate-300 m3-body-medium">{channel.name}</span>
                 </div>
-                <span className="font-bold">{channel.percentage}%</span>
+                <span className="m3-title-small">{channel.percentage}%</span>
               </div>
             ))}
           </div>
@@ -326,7 +326,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">{t('recentGoalProgress')}</h3>
+          <h3 className="m3-label-medium tracking-wider text-slate-400">{t('recentGoalProgress')}</h3>
         </div>
         
         {/* Monthly Goal Progress */}
@@ -335,8 +335,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
             <TrendingUp size={24} />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold">{t('monthlyGoal')}</p>
-            <p className="text-slate-500 text-[10px]">
+            <p className="m3-title-medium">{t('monthlyGoal')}</p>
+            <p className="text-slate-500 m3-body-small">
               {Math.round((sales.filter(s => isSameWeek(s.timestamp?.toDate() || new Date(), now, { weekStartsOn: 0 }) || true).reduce((acc, s) => {
                 const d = s.timestamp?.toDate() || new Date();
                 return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() ? acc + s.amount : acc;
@@ -344,7 +344,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
             </p>
           </div>
           <div className="text-right">
-            <span className="text-primary text-[10px] font-bold px-2 py-1 bg-primary/10 rounded-full uppercase">
+            <span className="text-primary m3-label-small px-2 py-1 bg-primary/10 rounded-full">
               {t('month')}
             </span>
           </div>
@@ -356,13 +356,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
             <CheckCircle size={24} />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold">{t('dailyGoal')}</p>
-            <p className="text-slate-500 text-[10px]">
+            <p className="m3-title-medium">{t('dailyGoal')}</p>
+            <p className="text-slate-500 m3-body-small">
               {Math.round((sales.filter(s => isSameDay(s.timestamp?.toDate() || new Date(), now)).reduce((acc, s) => acc + s.amount, 0) / dailyGoal) * 100)}% {t('ofTargetReached')} ({formatCurrency(dailyGoal)})
             </p>
           </div>
           <div className="text-right">
-            <span className="text-emerald-400 text-[10px] font-bold px-2 py-1 bg-emerald-400/10 rounded-full uppercase">
+            <span className="text-emerald-400 m3-label-small px-2 py-1 bg-emerald-400/10 rounded-full">
               {t('today')}
             </span>
           </div>

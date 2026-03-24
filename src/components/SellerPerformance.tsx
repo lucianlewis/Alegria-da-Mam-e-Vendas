@@ -68,30 +68,30 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
       </div>
       
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; padding: 24px; margin-bottom: 24px;">
-        <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">${t('viewSale')}</div>
+        <div style="font-size: 12px; font-weight: 800; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">${t('viewSale')}</div>
         <div style="font-size: 36px; font-weight: 900; color: #ff0080; margin-bottom: 24px;">${amount}</div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
           <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
-            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('seller')}</div>
+            <div style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 4px;">${t('seller')}</div>
             <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${sellerName}</div>
           </div>
           <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
-            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('day')}</div>
+            <div style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 4px;">${t('day')}</div>
             <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${date.split(' ')[0]} ${date.split(' ')[1]}</div>
           </div>
           <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
-            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('paymentMethod')}</div>
+            <div style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 4px;">${t('paymentMethod')}</div>
             <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${method}</div>
           </div>
           <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px;">
-            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; margin-bottom: 4px;">${t('saleSource')}</div>
+            <div style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 4px;">${t('saleSource')}</div>
             <div style="font-size: 14px; font-weight: 700; color: #1a1a1a;">${source}</div>
           </div>
         </div>
       </div>
 
-      <div style="text-align: center; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 40px; text-transform: uppercase; letter-spacing: 1px;">
+      <div style="text-align: center; font-size: 10px; font-weight: 600; color: #94a3b8; margin-top: 40px; letter-spacing: 1px;">
         ${new Date().toLocaleString()} • PipBase
       </div>
     `;
@@ -210,7 +210,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
         <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-xl font-bold tracking-tight">{t('sellerPerformance')}</h2>
+        <h2 className="m3-headline-small flex-1 text-center">{t('sellerPerformance')}</h2>
         <div className="size-10"></div>
       </header>
 
@@ -225,14 +225,14 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
             )}
           </div>
           <div>
-            <h3 className="text-lg font-bold">{seller.name}</h3>
-            <p className="text-xs text-slate-500">{t('goal')}: {formatCurrency(seller.goal)}</p>
+            <h3 className="m3-title-medium">{seller.name}</h3>
+            <p className="m3-label-small text-slate-500">{t('goal')}: {formatCurrency(seller.goal)}</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+            <div className="flex justify-between m3-label-small tracking-wider">
               <span className="text-slate-500">{t('monthlyProgress')}</span>
               <span className="text-primary">{monthlyProgress.toFixed(1)}%</span>
             </div>
@@ -246,7 +246,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+            <div className="flex justify-between m3-label-small tracking-wider">
               <span className="text-slate-500">{t('dailyGoal')}</span>
               <span className="text-emerald-400">{dailyProgress.toFixed(1)}%</span>
             </div>
@@ -257,7 +257,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                 className="h-full bg-emerald-400"
               />
             </div>
-            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            <div className="flex justify-between items-center m3-label-small tracking-widest text-slate-500">
               <span>{formatCurrency(salesToday)} / {formatCurrency(dailyGoal)}</span>
               {salesToday >= dailyGoal ? (
                 salesToday === dailyGoal ? (
@@ -275,7 +275,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
 
       {/* Sales List */}
       <div className="space-y-4">
-        <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-2">{t('salesHistory')}</h3>
+        <h3 className="m3-label-small tracking-widest text-slate-500 px-2">{t('salesHistory')}</h3>
         
         <div className="space-y-3">
           {loading ? (
@@ -284,7 +284,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
             </div>
           ) : sales.length === 0 ? (
             <div className="text-center py-12 bg-[var(--card-bg)] rounded-3xl border border-dashed border-[var(--border-color)]">
-              <p className="text-slate-500 text-sm">{t('noSalesFound')}</p>
+              <p className="text-slate-500 m3-body-medium">{t('noSalesFound')}</p>
             </div>
           ) : (
             sales.map((sale) => {
@@ -303,8 +303,8 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                         <SourceIcon size={18} className="text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold">{formatCurrency(sale.amount)}</p>
-                        <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                        <p className="m3-title-medium">{formatCurrency(sale.amount)}</p>
+                        <div className="flex items-center gap-2 m3-label-small text-slate-500">
                           <Calendar size={10} />
                           <span>{sale.timestamp ? format(sale.timestamp.toDate(), 'dd MMM', { locale: currentLocale }) : '--'}</span>
                           <span className="opacity-30">•</span>
@@ -357,20 +357,20 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                 <Trash2 size={32} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold">{t('confirmDelete')}</h3>
-                <p className="text-sm text-slate-500">{t('confirmDeleteSale')}</p>
+                <h3 className="m3-title-large">{t('confirmDelete')}</h3>
+                <p className="m3-body-medium text-slate-500">{t('confirmDeleteSale')}</p>
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
-                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-xs font-bold uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
+                  className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 m3-label-large hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                 >
                   {t('cancel')}
                 </button>
                 <button
                   onClick={() => handleDeleteSale(showDeleteConfirm)}
                   disabled={isDeleting}
-                  className="flex-1 py-3 rounded-2xl bg-rose-500 text-white text-xs font-bold uppercase tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center"
+                  className="flex-1 py-3 rounded-2xl bg-rose-500 text-white m3-label-large hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center"
                 >
                   {isDeleting ? <Loader2 className="animate-spin" size={16} /> : t('delete')}
                 </button>
@@ -396,7 +396,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
             >
               <div className="p-6 space-y-6">
                 <header className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold">{t('viewSale')}</h3>
+                  <h3 className="m3-title-large">{t('viewSale')}</h3>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => handlePrint(selectedSale)}
@@ -421,39 +421,39 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
 
                   <div className="space-y-4">
                   <div className="flex justify-between items-center p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)]">
-                    <span className="text-xs font-bold text-slate-500 uppercase">{t('amount')}</span>
-                    <span className="text-xl font-black text-primary">{formatCurrency(selectedSale.amount)}</span>
+                    <span className="m3-label-medium text-slate-500">{t('amount')}</span>
+                    <span className="m3-headline-medium text-primary">{formatCurrency(selectedSale.amount)}</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] space-y-1">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase">{t('paymentMethod')}</p>
+                      <p className="m3-label-small text-slate-500">{t('paymentMethod')}</p>
                       <div className="flex items-center gap-2">
                         {React.createElement(getMethodIcon(selectedSale.paymentMethod), { size: 14, className: "text-primary" })}
-                        <span className="text-xs font-bold capitalize">{t(selectedSale.paymentMethod)}</span>
+                        <span className="m3-label-medium capitalize">{t(selectedSale.paymentMethod)}</span>
                       </div>
                     </div>
                     <div className="p-3 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] space-y-1">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase">{t('saleSource')}</p>
+                      <p className="m3-label-small text-slate-500">{t('saleSource')}</p>
                       <div className="flex items-center gap-2">
                         {React.createElement(getSourceIcon(selectedSale.source), { size: 14, className: "text-primary" })}
-                        <span className="text-xs font-bold capitalize">{t(selectedSale.source.replace('-', ' '))}</span>
+                        <span className="m3-label-medium capitalize">{t(selectedSale.source.replace('-', ' '))}</span>
                       </div>
                     </div>
                   </div>
 
                   {selectedSale.cashDetails && (
                     <div className="p-4 bg-[var(--card-bg)] rounded-2xl border border-[var(--border-color)] space-y-3">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase">{t('cashBreakdown')}</p>
+                      <p className="m3-label-small text-slate-500">{t('cashBreakdown')}</p>
                       
                       {selectedSale.cashDetails.bills && Object.keys(selectedSale.cashDetails.bills).length > 0 && (
                         <div className="space-y-2">
-                          <p className="text-[9px] font-bold text-slate-600 uppercase">{t('bills')}</p>
+                          <p className="m3-label-small text-slate-600">{t('bills')}</p>
                           <div className="grid grid-cols-2 gap-2">
                             {Object.entries(selectedSale.cashDetails.bills)
                               .sort((a, b) => Number(b[0]) - Number(a[0]))
                               .map(([val, qty]) => (
-                                <div key={val} className="flex justify-between text-[11px] bg-slate-100 dark:bg-white/10 p-2 rounded-lg">
+                                <div key={val} className="flex justify-between m3-label-small bg-slate-100 dark:bg-white/10 p-2 rounded-lg">
                                   <span>{formatCurrency(Number(val))}</span>
                                   <span className="font-bold">x{qty}</span>
                                 </div>
@@ -464,12 +464,12 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
 
                       {selectedSale.cashDetails.coins && Object.keys(selectedSale.cashDetails.coins).length > 0 && (
                         <div className="space-y-2">
-                          <p className="text-[9px] font-bold text-slate-600 uppercase">{t('coins')}</p>
+                          <p className="m3-label-small text-slate-600">{t('coins')}</p>
                           <div className="grid grid-cols-2 gap-2">
                             {Object.entries(selectedSale.cashDetails.coins)
                               .sort((a, b) => Number(b[0]) - Number(a[0]))
                               .map(([val, qty]) => (
-                                <div key={val} className="flex justify-between text-[11px] bg-slate-100 dark:bg-white/10 p-2 rounded-lg">
+                                <div key={val} className="flex justify-between m3-label-small bg-slate-100 dark:bg-white/10 p-2 rounded-lg">
                                   <span>{formatCurrency(Number(val))}</span>
                                   <span className="font-bold">x{qty}</span>
                                 </div>
@@ -480,7 +480,7 @@ export const SellerPerformance: React.FC<SellerPerformanceProps> = ({ seller, on
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500 justify-center pt-2">
+                  <div className="flex items-center gap-2 m3-label-small text-slate-500 justify-center pt-2">
                     <Calendar size={12} />
                     <span>{selectedSale.timestamp ? format(selectedSale.timestamp.toDate(), 'PPP', { locale: currentLocale }) : '--'}</span>
                     <span className="opacity-30">•</span>

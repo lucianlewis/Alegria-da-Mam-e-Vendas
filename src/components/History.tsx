@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Share2, Download, ChevronDown, Trash2, Calendar, Clock, User, CreditCard, Banknote, Smartphone, QrCode, Store, MessageCircle, Instagram, AlertCircle, Loader2, FileText } from 'lucide-react';
+import { Share2, Download, ChevronDown, Trash2, Calendar, Clock, User, CreditCard, Banknote, Smartphone, QrCode, Store, MessageCircle, Instagram, AlertCircle, Loader2, FileText, Link as LinkIcon, Ticket } from 'lucide-react';
 import { Sale, CashMovement, Goal, Seller } from '../types';
 import { format, isSameDay } from 'date-fns';
 import { enUS, ptBR, fr, es, de, hi, ru, ja, zhCN, ko, th } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../firebase';
-import { doc } from 'firebase/firestore';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { DailyReport } from './DailyReport';
@@ -45,6 +45,8 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
       case 'credit': return CreditCard;
       case 'debit': return Smartphone;
       case 'pix': return QrCode;
+      case 'payment-link': return LinkIcon;
+      case 'exchange-voucher': return Ticket;
       default: return Banknote;
     }
   };
@@ -56,17 +58,36 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
       acc[dateKey] = {
         date: date,
         total: 0,
-        methods: { cash: 0, credit: 0, debit: 0, pix: 0 },
+        methods: { cash: 0, credit: 0, debit: 0, pix: 0, 'payment-link': 0, 'exchange-voucher': 0 },
         salesCount: 0
       };
     }
     acc[dateKey].total += sale.amount;
-    acc[dateKey].methods[sale.paymentMethod] += sale.amount;
+    
+    if (sale.payments && sale.payments.length > 0) {
+      sale.payments.forEach(p => {
+        acc[dateKey].methods[p.method] = (acc[dateKey].methods[p.method] || 0) + p.amount;
+      });
+    } else {
+      acc[dateKey].methods[sale.paymentMethod] = (acc[dateKey].methods[sale.paymentMethod] || 0) + sale.amount;
+    }
+
     acc[dateKey].salesCount += 1;
     return acc;
   }, {} as Record<string, { date: Date, total: number, methods: Record<string, number>, salesCount: number }>);
 
   const sortedSummaries = Object.values(dailySummaries).sort((a, b) => b.date.getTime() - a.date.getTime());
+  
+  const handleDeleteSale = async (id: string) => {
+    try {
+      setDeletingId(id);
+      await deleteDoc(doc(db, 'sales', id));
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleShare = async (summary: any) => {
     const date = format(summary.date, 'EEEE, dd MMMM yyyy', { locale: currentLocale });
@@ -106,7 +127,7 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
     <div className="p-4 space-y-6 pb-24">
       <header className="flex flex-col gap-4">
         <div className="flex items-center justify-between py-2">
-          <h2 className="text-xl font-bold tracking-tight">{t('history')}</h2>
+          <h2 className="m3-headline-small">{t('history')}</h2>
         </div>
       </header>
 
@@ -120,6 +141,7 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
               goal={goals[0]} // Using first goal as default
               sellers={sellers}
               onBack={() => setSelectedSummary(null)}
+              onDeleteSale={handleDeleteSale}
             />
           )}
         </AnimatePresence>
@@ -127,7 +149,7 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
         {sortedSummaries.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500 space-y-4">
             <AlertCircle size={48} className="opacity-20" />
-            <p className="text-sm font-bold">{t('noSalesFound')}</p>
+            <p className="m3-label-large">{t('noSalesFound')}</p>
           </div>
         ) : (
           sortedSummaries.map((summary) => (
@@ -140,16 +162,16 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
             >
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h3 className="text-lg font-black tracking-tight">
+                  <h3 className="m3-title-large tracking-tight">
                     {format(summary.date, 'EEEE, dd', { locale: currentLocale })}
                   </h3>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <p className="m3-label-small text-slate-500 tracking-widest">
                     {format(summary.date, 'MMMM yyyy', { locale: currentLocale })} • {summary.salesCount} {t('salesToday')}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black text-primary">{formatCurrency(summary.total)}</p>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('grandTotal')}</p>
+                  <p className="m3-headline-small text-primary">{formatCurrency(summary.total)}</p>
+                  <p className="m3-label-small text-slate-500 tracking-widest">{t('grandTotal')}</p>
                 </div>
               </div>
 
@@ -163,8 +185,8 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
                         <Icon size={16} />
                       </div>
                       <div>
-                        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-tight">{t(method)}</p>
-                        <p className="text-sm font-black">{formatCurrency(amount)}</p>
+                        <p className="m3-label-small text-slate-500 tracking-tight">{t(method)}</p>
+                        <p className="m3-title-small">{formatCurrency(amount)}</p>
                       </div>
                     </div>
                   );
@@ -177,14 +199,14 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
                     e.stopPropagation();
                     setSelectedSummary(summary);
                   }}
-                  className="flex-1 py-3 rounded-xl border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl border border-primary/20 text-primary m3-label-medium tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
                 >
                   <FileText size={14} />
                   {t('pdf')}
                 </button>
                 <button 
                   onClick={() => handleShare(summary)}
-                  className="flex-1 py-3 rounded-xl border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl border border-primary/20 text-primary m3-label-medium tracking-widest hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
                 >
                   <Share2 size={14} />
                   {t('share')}
