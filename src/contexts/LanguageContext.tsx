@@ -2343,7 +2343,20 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<LanguageCode>(() => {
     const saved = localStorage.getItem('app_language');
-    return (saved as LanguageCode) || 'en';
+    if (saved && languages.some(l => l.code === saved)) {
+      return saved as LanguageCode;
+    }
+    
+    // Detect system language
+    const systemLang = navigator.language;
+    const matchedLang = languages.find(l => 
+      systemLang.startsWith(l.code) || 
+      (l.code === 'pt-BR' && (systemLang === 'pt-BR' || systemLang === 'pt'))
+    );
+    
+    const defaultLang = matchedLang ? matchedLang.code : 'en';
+    localStorage.setItem('app_language', defaultLang);
+    return defaultLang;
   });
 
   // Sync with Firestore
