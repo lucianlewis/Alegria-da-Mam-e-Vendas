@@ -50,12 +50,14 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
               <div 
                 key={method} 
                 onClick={() => onViewMethodDetail(method)}
-                className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-3 transition-all cursor-pointer active:scale-[0.98] hover:bg-white/5 group"
+                className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-3 flex items-center gap-3 transition-all cursor-pointer active:scale-[0.98] hover:bg-white/5 group"
               >
-                <Icon size={20} className="text-primary group-hover:scale-110 transition-transform" />
-                <div className="space-y-0.5">
-                  <p className="m3-label-small text-slate-500 tracking-tight">{label}</p>
-                  <p className="m3-headline-small">{formatCurrency(totalsByMethod[method] || 0)}</p>
+                <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shrink-0">
+                  <Icon size={20} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-slate-500 tracking-tight truncate">{label}</p>
+                  <p className="text-sm font-black truncate">{formatCurrency(totalsByMethod[method] || 0)}</p>
                 </div>
               </div>
             );

@@ -9,9 +9,20 @@ import { useTheme } from '../contexts/ThemeContext';
 interface ProfileProps {
   onNavigateSellers: () => void;
   onViewPerformance: () => void;
+  onEditProfile: () => void;
+  onViewPrivacy: () => void;
+  onViewTerms: () => void;
+  onDeleteAccount: () => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerformance }) => {
+export const Profile: React.FC<ProfileProps> = ({ 
+  onNavigateSellers, 
+  onViewPerformance, 
+  onEditProfile,
+  onViewPrivacy,
+  onViewTerms,
+  onDeleteAccount
+}) => {
   const user = auth.currentUser;
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
@@ -45,8 +56,8 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
           value: `${currentLanguage.flag} ${currentLanguage.name}`,
           onClick: () => setShowLanguageDropdown(!showLanguageDropdown)
         },
-        { icon: Lock, label: t('privacySettings') },
-        { icon: FileText, label: t('termsOfService') },
+        { icon: Lock, label: t('privacySettings'), onClick: onViewPrivacy },
+        { icon: FileText, label: t('termsOfService'), onClick: onViewTerms },
       ]
     }
   ];
@@ -82,7 +93,10 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
           <p className="text-slate-500 m3-body-small">{user?.email}</p>
         </div>
 
-        <button className="bg-primary text-white m3-label-large px-8 py-3 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
+        <button 
+          onClick={onEditProfile}
+          className="bg-primary text-white m3-label-large px-8 py-3 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all"
+        >
           {t('editProfile')}
         </button>
       </div>
@@ -176,7 +190,10 @@ export const Profile: React.FC<ProfileProps> = ({ onNavigateSellers, onViewPerfo
       ))}
 
       <div className="bg-[var(--card-bg)] rounded-3xl border border-[var(--border-color)] overflow-hidden">
-        <button className="w-full flex items-center gap-4 p-4 text-rose-500 active:bg-rose-500/10 transition-colors border-b border-[var(--border-color)]">
+        <button 
+          onClick={onDeleteAccount}
+          className="w-full flex items-center gap-4 p-4 text-rose-500 active:bg-rose-500/10 transition-colors border-b border-[var(--border-color)]"
+        >
           <Trash2 size={20} />
           <span className="m3-label-large">{t('deleteAccount')}</span>
         </button>

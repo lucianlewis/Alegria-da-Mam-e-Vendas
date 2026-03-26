@@ -9,6 +9,10 @@ import { Dashboard } from './components/Dashboard';
 import { Entries } from './components/Entries';
 import { History } from './components/History';
 import { Profile } from './components/Profile';
+import { ProfileEdit } from './components/ProfileEdit';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsOfService } from './components/TermsOfService';
+import { AccountDeletion } from './components/AccountDeletion';
 import { NewSale } from './components/NewSale';
 import { SellersList } from './components/SellersList';
 import { EditSeller } from './components/EditSeller';
@@ -27,7 +31,7 @@ export default function App() {
   const [showNewSale, setShowNewSale] = useState(false);
   const [showCashMovement, setShowCashMovement] = useState(false);
   const [cashMovementType, setCashMovementType] = useState<CashMovementType>('sangria');
-  const [view, setView] = useState<'main' | 'sellers' | 'edit-seller' | 'performance' | 'cash-session'>('main');
+  const [view, setView] = useState<'main' | 'sellers' | 'edit-seller' | 'performance' | 'cash-session' | 'profile-edit' | 'privacy-policy' | 'terms-of-service' | 'account-deletion'>('main');
   const [selectedSeller, setSelectedSeller] = useState<Seller | undefined>();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
 
@@ -200,6 +204,41 @@ export default function App() {
     );
   }
 
+  if (view === 'profile-edit') {
+    return (
+      <ProfileEdit 
+        onBack={() => setView('main')} 
+      />
+    );
+  }
+
+  if (view === 'privacy-policy') {
+    return (
+      <PrivacyPolicy 
+        onBack={() => setView('main')} 
+      />
+    );
+  }
+
+  if (view === 'terms-of-service') {
+    return (
+      <TermsOfService 
+        onBack={() => setView('main')} 
+      />
+    );
+  }
+
+  if (view === 'account-deletion') {
+    return (
+      <AccountDeletion 
+        onBack={() => setView('main')} 
+        sales={sales}
+        cashMovements={cashMovements}
+        onProfileEdit={() => setView('profile-edit')}
+      />
+    );
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -241,6 +280,10 @@ export default function App() {
                 setView('sellers');
               }
             }}
+            onEditProfile={() => setView('profile-edit')}
+            onViewPrivacy={() => setView('privacy-policy')}
+            onViewTerms={() => setView('terms-of-service')}
+            onDeleteAccount={() => setView('account-deletion')}
           />
         );
       default:

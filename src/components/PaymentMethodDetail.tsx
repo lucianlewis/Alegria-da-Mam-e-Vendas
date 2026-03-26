@@ -196,11 +196,16 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
         <button onClick={onBack} className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="m3-headline-small flex-1 ml-2">
-          {method === 'payment-link' ? t('paymentLink') : 
-           method === 'exchange-voucher' ? t('exchangeVoucher') : 
-           t(method)} - {t('paymentMethodDetail')}
-        </h1>
+        <div className="ml-2">
+          <h1 className="m3-headline-small leading-none">
+            {method === 'payment-link' ? t('paymentLink') : 
+             method === 'exchange-voucher' ? t('exchangeVoucher') : 
+             t(method)}
+          </h1>
+          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">
+            {t('paymentMethodDetail')}
+          </p>
+        </div>
         <button 
           onClick={handlePrint}
           className="text-[var(--text-color)] flex size-10 items-center justify-center hover:bg-[var(--card-bg)] rounded-full"
@@ -250,56 +255,56 @@ export const PaymentMethodDetail: React.FC<PaymentMethodDetailProps> = ({ method
               <h3 className="m3-title-small tracking-widest text-primary">{t('cashBreakdown')}</h3>
             </div>
 
-            <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl overflow-hidden">
-              <div className="p-4 bg-white/5 border-b border-[var(--border-color)]">
-                <p className="m3-label-medium text-slate-500 tracking-widest">{t('bills')}</p>
+            <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl overflow-hidden">
+              <div className="p-3 bg-white/5 border-b border-[var(--border-color)]">
+                <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">{t('bills')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
                 {availableBills.map(val => {
                   const qty = bills[val.toString()] || 0;
                   return (
-                    <div key={val} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                    <div key={val} className="flex items-center justify-between p-3 hover:bg-white/5 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">
                           {val}
                         </div>
-                        <span className="m3-body-medium">{formatCurrency(val)}</span>
+                        <span className="text-xs font-bold">{formatCurrency(val)}</span>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <span className="m3-label-small text-slate-500">x{qty}</span>
-                        <span className="m3-title-small w-20 text-right">{formatCurrency(val * qty)}</span>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold text-slate-500">x{qty}</span>
+                        <span className="text-xs font-black w-16 text-right">{formatCurrency(val * qty)}</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
 
-              <div className="p-4 bg-white/5 border-y border-[var(--border-color)]">
-                <p className="m3-label-medium text-slate-500 tracking-widest">{t('coins')}</p>
+              <div className="p-3 bg-white/5 border-y border-[var(--border-color)]">
+                <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">{t('coins')}</p>
               </div>
               <div className="divide-y divide-[var(--border-color)]/30">
                 {availableCoins.map(val => {
                   const qty = coins[val.toString()] || 0;
                   return (
-                    <div key={val} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-bold text-[10px]">
+                    <div key={val} className="flex items-center justify-between p-3 hover:bg-white/5 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <div className="size-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-bold text-[9px]">
                           {val}
                         </div>
-                        <span className="m3-body-medium">{formatCurrency(val)}</span>
+                        <span className="text-xs font-bold">{formatCurrency(val)}</span>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <span className="m3-label-small text-slate-500">x{qty}</span>
-                        <span className="m3-title-small w-20 text-right">{formatCurrency(val * qty)}</span>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold text-slate-500">x{qty}</span>
+                        <span className="text-xs font-black w-16 text-right">{formatCurrency(val * qty)}</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
               
-              <div className="p-6 bg-primary/5 flex justify-between items-center">
-                <span className="m3-label-small tracking-widest text-primary">{t('total')}</span>
-                <span className="m3-headline-small text-primary">{formatCurrency(netCash)}</span>
+              <div className="p-4 bg-primary/5 flex justify-between items-center">
+                <span className="text-[10px] font-bold tracking-widest text-primary uppercase">{t('total')}</span>
+                <span className="text-lg font-black text-primary">{formatCurrency(netCash)}</span>
               </div>
             </div>
           </div>

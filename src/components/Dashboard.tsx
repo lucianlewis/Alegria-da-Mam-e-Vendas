@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { TrendingUp, TrendingDown, CheckCircle, PieChart, Calendar, ChevronDown, Power } from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle, PieChart, Calendar, ChevronDown, Power, Store } from 'lucide-react';
 import { Sale, Goal, Seller } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { calculateDailyGoal, isWorkingDay } from '../utils/goalUtils';
@@ -140,9 +140,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
         <div className="flex gap-2">
           <button 
             onClick={onCashSessionClick}
-            className={`size-10 rounded-full bg-[var(--card-bg)] flex items-center justify-center border transition-colors ${isSessionOpen ? 'border-primary' : 'border-[var(--border-color)]'}`}
+            className={cn(
+              "size-10 rounded-full flex items-center justify-center border transition-all active:scale-95 shadow-sm",
+              isSessionOpen 
+                ? "bg-white border-primary text-primary" 
+                : "bg-[var(--card-bg)] border-[var(--border-color)] text-slate-400"
+            )}
           >
-            <Power size={20} className={isSessionOpen ? 'text-primary' : 'text-slate-400'} />
+            <Store size={20} />
           </button>
           <div className="size-10 rounded-full bg-[var(--card-bg)] flex items-center justify-center border border-[var(--border-color)]">
             <PieChart size={20} className="text-primary" />

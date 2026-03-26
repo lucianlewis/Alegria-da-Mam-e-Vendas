@@ -384,8 +384,8 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
       </header>
 
       <main className="flex-1 overflow-y-auto p-4 space-y-6 pb-40">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-3 items-stretch">
+          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex flex-col justify-between gap-3 h-full">
             <div className="space-y-1">
               <h3 className="text-[10px] font-bold text-primary flex items-center gap-2 tracking-wider">
                 <Sparkles size={14} /> {t('aiAssistant')}
@@ -395,7 +395,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={analyzing}
-              className="w-full bg-primary text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full bg-primary text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50 mt-auto"
             >
               {analyzing ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
               {analyzing ? t('analyzing') : t('scan')}
@@ -409,7 +409,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             />
           </div>
 
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex flex-col gap-3">
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex flex-col justify-between gap-3 h-full">
             <div className="space-y-1">
               <h3 className="text-[10px] font-bold text-blue-500 flex items-center gap-2 tracking-wider">
                 <FileUp size={14} /> {t('spreadsheet')}
@@ -419,7 +419,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
             <button 
               onClick={() => spreadsheetInputRef.current?.click()}
               disabled={extracting}
-              className="w-full bg-blue-500 text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full bg-blue-500 text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50 mt-auto"
             >
               {extracting ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
               {extracting ? t('extractingData') : t('upload')}
@@ -580,51 +580,51 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
 
                   {/* Cash Details Section inside the specific method input area if it's cash */}
                   {payment.method === 'cash' && (
-                    <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-4 space-y-4 mt-2">
+                    <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-3 space-y-3 mt-2">
                       <div className="flex items-center gap-2 text-primary">
-                        <Banknote size={18} />
-                        <h3 className="text-xs font-bold tracking-wider">{t('cashBreakdown')}</h3>
+                        <Banknote size={14} />
+                        <h3 className="text-[10px] font-bold tracking-wider">{t('cashBreakdown')}</h3>
                       </div>
-                      <div className="grid grid-cols-1 gap-3">
-                        <p className="text-[10px] font-bold text-slate-500 px-2">{t('bills')}</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        <p className="text-[9px] font-bold text-slate-500 px-1">{t('bills')}</p>
                         {bills.map(val => (
-                          <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
-                            <span className="text-sm font-bold">{formatCurrency(val)}</span>
-                            <div className="flex items-center gap-4">
+                          <div key={val} className="flex items-center justify-between bg-white/5 p-2 rounded-lg">
+                            <span className="text-xs font-bold">{formatCurrency(val)}</span>
+                            <div className="flex items-center gap-3">
                               <button 
                                 onClick={() => handleBillChange(val, -1)}
-                                className="size-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                                className="size-6 rounded-md bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                               >
-                                <Minus size={16} />
+                                <Minus size={12} />
                               </button>
-                              <span className="w-8 text-center font-black">{billQuantities[val] || 0}</span>
+                              <span className="w-6 text-center text-xs font-black">{billQuantities[val] || 0}</span>
                               <button 
                                 onClick={() => handleBillChange(val, 1)}
-                                className="size-8 rounded-lg bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
+                                className="size-6 rounded-md bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
                               >
-                                <Plus size={16} />
+                                <Plus size={12} />
                               </button>
                             </div>
                           </div>
                         ))}
 
-                        <p className="text-[10px] font-bold text-slate-500 px-2 mt-2">{t('coins')}</p>
+                        <p className="text-[9px] font-bold text-slate-500 px-1 mt-1">{t('coins')}</p>
                         {coins.map(val => (
-                          <div key={val} className="flex items-center justify-between bg-white/5 p-3 rounded-xl">
-                            <span className="text-sm font-bold">{formatCurrency(val)}</span>
-                            <div className="flex items-center gap-4">
+                          <div key={val} className="flex items-center justify-between bg-white/5 p-2 rounded-lg">
+                            <span className="text-xs font-bold">{formatCurrency(val)}</span>
+                            <div className="flex items-center gap-3">
                               <button 
                                 onClick={() => handleCoinChange(val, -1)}
-                                className="size-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                                className="size-6 rounded-md bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                               >
-                                <Minus size={16} />
+                                <Minus size={12} />
                               </button>
-                              <span className="w-8 text-center font-black">{coinQuantities[val] || 0}</span>
+                              <span className="w-6 text-center text-xs font-black">{coinQuantities[val] || 0}</span>
                               <button 
                                 onClick={() => handleCoinChange(val, 1)}
-                                className="size-8 rounded-lg bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
+                                className="size-6 rounded-md bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
                               >
-                                <Plus size={16} />
+                                <Plus size={12} />
                               </button>
                             </div>
                           </div>
