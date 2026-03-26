@@ -113,6 +113,7 @@ export const EditSeller: React.FC<EditSellerProps> = ({ seller, onBack, onSucces
       } else {
         await addDoc(collection(db, 'sellers'), {
           ...sellerData,
+          userId: auth.currentUser?.uid,
           createdAt: serverTimestamp(),
         });
       }

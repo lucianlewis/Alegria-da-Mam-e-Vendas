@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCollectionData, useCollection } from 'react-firebase-hooks/firestore';
 import { collection, query, orderBy, limit, doc, getDoc, setDoc, serverTimestamp, where } from 'firebase/firestore';
@@ -27,6 +27,8 @@ import { Loader2 } from 'lucide-react';
 export default function App() {
   const { t } = useLanguage();
   const [user, loading, error] = useAuthState(auth);
+  const [userData, setUserData] = useState<any>(null);
+  const [userDataLoading, setUserDataLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   const [showNewSale, setShowNewSale] = useState(false);
   const [showCashMovement, setShowCashMovement] = useState(false);
@@ -35,12 +37,18 @@ export default function App() {
   const [selectedSeller, setSelectedSeller] = useState<Seller | undefined>();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
 
+  const isAdmin = user?.email === 'mahteusmachado@gmail.com' || userData?.role === 'admin';
+
   // Fetch current open cash session
-  const cashSessionsQuery = query(
-    collection(db, 'cashSessions'), 
-    where('status', '==', 'open'),
-    limit(1)
-  );
+  const cashSessionsQuery = useMemo(() => {
+    if (!user || userDataLoading) return null;
+    return query(
+      collection(db, 'cashSessions'), 
+      where('userId', '==', user.uid),
+      where('status', '==', 'open'),
+      limit(1)
+    );
+  }, [user, userDataLoading]);
   const [sessionsSnapshot, sessionsLoading] = useCollection(cashSessionsQuery);
   const currentSession = sessionsSnapshot && !sessionsSnapshot.empty 
     ? { id: sessionsSnapshot.docs[0].id, ...sessionsSnapshot.docs[0].data() } as CashSessionInterface 
@@ -49,10 +57,15 @@ export default function App() {
   // Ensure user document exists
   useEffect(() => {
     if (user) {
+      setUserDataLoading(true);
       const userRef = doc(db, 'users', user.uid);
       getDoc(userRef).then((docSnap) => {
-        if (!docSnap.exists()) {
-          setDoc(userRef, {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUserData(data);
+          setUserDataLoading(false);
+        } else {
+          const newUserData = {
             uid: user.uid,
             email: user.email,
             displayName: user.displayName,
@@ -60,26 +73,67 @@ export default function App() {
             role: user.email === 'mahteusmachado@gmail.com' ? 'admin' : 'seller',
             language: localStorage.getItem('app_language') || 'en',
             createdAt: serverTimestamp()
-          }).catch(err => console.error("Error creating user doc:", err));
+          };
+          setDoc(userRef, newUserData)
+            .then(() => {
+              setUserData(newUserData);
+              setUserDataLoading(false);
+            })
+            .catch(err => {
+              console.error("Error creating user doc:", err);
+              setUserDataLoading(false);
+            });
         }
+      }).catch(err => {
+        console.error("Error fetching user doc:", err);
+        setUserDataLoading(false);
       });
+    } else {
+      setUserData(null);
+      setUserDataLoading(false);
     }
   }, [user]);
 
-  // Fetch sales - Global query to ensure all records are fetched
-  const salesQuery = query(collection(db, 'sales'), orderBy('timestamp', 'desc'));
+  // Fetch sales - Global query for admin, scoped for sellers
+  const salesQuery = useMemo(() => {
+    if (!user || userDataLoading) return null;
+    const base = collection(db, 'sales');
+    if (isAdmin) {
+      return query(base, orderBy('timestamp', 'desc'));
+    }
+    return query(base, 
+      where('sellerId', '==', user.uid),
+      orderBy('timestamp', 'desc')
+    );
+  }, [user, isAdmin, userDataLoading]);
   const [salesData, salesLoading] = useCollectionData(salesQuery);
 
-  // Fetch cashMovements - Global query
-  const cashMovementsQuery = query(collection(db, 'cashMovements'), orderBy('timestamp', 'desc'));
+  // Fetch cashMovements - Global for admin, scoped for sellers
+  const cashMovementsQuery = useMemo(() => {
+    if (!user || userDataLoading) return null;
+    const base = collection(db, 'cashMovements');
+    if (isAdmin) {
+      return query(base, orderBy('timestamp', 'desc'));
+    }
+    return query(base, 
+      where('userId', '==', user.uid),
+      orderBy('timestamp', 'desc')
+    );
+  }, [user, isAdmin, userDataLoading]);
   const [cashMovementsData, cashMovementsLoading] = useCollectionData(cashMovementsQuery);
 
-  // Fetch goals (mocking some initial data if empty)
-  const goalsQuery = query(collection(db, 'goals'));
+  // Fetch goals - Global as per rules (allow read: if isAuthenticated)
+  const goalsQuery = useMemo(() => {
+    if (!user || userDataLoading) return null;
+    return query(collection(db, 'goals'));
+  }, [user, userDataLoading]);
   const [goalsData, goalsLoading] = useCollectionData(goalsQuery);
 
-  // Fetch sellers
-  const sellersQuery = query(collection(db, 'sellers'), orderBy('name', 'asc'));
+  // Fetch sellers - Global as per rules (allow read: if isAuthenticated)
+  const sellersQuery = useMemo(() => {
+    if (!user || userDataLoading) return null;
+    return query(collection(db, 'sellers'), orderBy('name', 'asc'));
+  }, [user, userDataLoading]);
   const [sellersSnapshot, sellersLoading] = useCollection(sellersQuery);
 
   const sales = (salesData || []) as Sale[];

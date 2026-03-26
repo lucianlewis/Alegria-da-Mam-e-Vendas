@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Banknote, CreditCard, Smartphone, QrCode, User as UserIcon, TrendingUp, TrendingDown, Minus, ChevronRight, Link as LinkIcon, Ticket } from 'lucide-react';
 import { Sale, Seller } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { sanitizeForDisplay } from '../utils/sanitize';
 
 interface EntriesProps {
   sales: Sale[];
@@ -101,7 +102,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
                     <UserIcon size={20} />
                   </div>
                   <div>
-                    <h4 className="m3-title-small">{name}</h4>
+                    <h4 className="m3-title-small">{sanitizeForDisplay(name)}</h4>
                     <p className="m3-body-small text-slate-500">{sellerSales.length} {t('salesToday')}</p>
                   </div>
                 </div>

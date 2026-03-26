@@ -1,57 +1,78 @@
-// ===============================================================
-// Assumed Data Model
-// ===============================================================
-//
-// Collection: users
-// Document ID: {uid}
-// Fields:
-//   - uid: string (required) - Firebase Auth UID
-//   - email: string (required) - User email
-//   - displayName: string (optional)
-//   - photoURL: string (optional)
-//   - role: string (required, enum: ['admin', 'seller'])
-//   - language: string (optional)
-//
-// Collection: sales
-// Document ID: auto-generated
-// Fields:
-//   - sellerId: string (required) - UID of the seller
-//   - sellerName: string (required)
-//   - amount: number (required, positive)
-//   - paymentMethod: string (required, enum: ['cash', 'credit', 'debit', 'pix'])
-//   - source: string (required, enum: ['physical-store', 'whatsapp', 'instagram'])
-//   - timestamp: timestamp (required)
-//   - cashDetails: map (optional)
-//
-// Collection: goals
-// Document ID: auto-generated
-// Fields:
-//   - title: string (required)
-//   - target: number (required, positive)
-//   - current: number (required)
-//   - status: string (required, enum: ['on-track', 'behind', 'completed'])
-//
-// Collection: cashSessions
-// Document ID: auto-generated
-// Fields:
-//   - userId: string (required)
-//   - userName: string (optional)
-//   - openingTimestamp: timestamp (required)
-//   - openingAmount: number (required)
-//   - openingDetails: map (optional)
-//   - closingTimestamp: timestamp (optional)
-//   - closingAmount: number (optional)
-//   - closingDetails: map (optional)
-//   - expectedAmount: number (optional)
-//   - difference: number (optional)
-//   - status: string (required, enum: ['open', 'closed'])
-//   - observations: string (optional)
-//
-// ===============================================================
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required) - Firebase Auth UID
+    //   - email: string (required, email format)
+    //   - displayName: string (optional, max 100)
+    //   - photoURL: string (optional, max 500)
+    //   - role: string (enum: ['admin', 'seller'])
+    //   - language: string (optional, max 10)
+    //
+    // Collection: sales
+    // Document ID: {saleId}
+    // Fields:
+    //   - sellerId: string (required)
+    //   - sellerName: string (required, max 100)
+    //   - amount: number (required, positive)
+    //   - paymentMethod: string (enum: ['cash', 'credit', 'debit', 'pix', 'link', 'store-credit'])
+    //   - source: string (enum: ['physical-store', 'whatsapp', 'instagram', 'site'])
+    //   - timestamp: timestamp (required)
+    //   - cashDetails: map (optional)
+    //
+    // Collection: goals
+    // Document ID: {goalId}
+    // Fields:
+    //   - title: string (required, max 200)
+    //   - target: number (required, positive)
+    //   - current: number (required, positive)
+    //   - status: string (enum: ['on-track', 'behind', 'completed'])
+    //
+    // Collection: sellers
+    // Document ID: {sellerId}
+    // Fields:
+    //   - name: string (required, max 100)
+    //   - phone: string (optional, max 20)
+    //   - goal: number (required, positive)
+    //   - observations: string (optional, max 500)
+    //   - photoURL: string (optional, max 500)
+    //   - createdAt: timestamp (optional)
+    //
+    // Collection: cashMovements
+    // Document ID: {movementId}
+    // Fields:
+    //   - type: string (enum: ['sangria', 'reforco'])
+    //   - amount: number (required, positive)
+    //   - observation: string (optional, max 500)
+    //   - timestamp: timestamp (required)
+    //   - cashDetails: map (optional)
+    //   - userId: string (required)
+    //   - userName: string (optional, max 100)
+    //
+    // Collection: cashSessions
+    // Document ID: {sessionId}
+    // Fields:
+    //   - userId: string (required)
+    //   - userName: string (optional, max 100)
+    //   - openingTimestamp: timestamp (required)
+    //   - openingAmount: number (required)
+    //   - openingDetails: map (optional)
+    //   - closingTimestamp: timestamp (optional)
+    //   - closingAmount: number (optional)
+    //   - closingDetails: map (optional)
+    //   - expectedAmount: number (optional)
+    //   - difference: number (optional)
+    //   - status: string (enum: ['open', 'closed'])
+    //   - observations: string (optional, max 500)
+    //
+    // ===============================================================
 
     // ===============================================================
     // Helper Functions
@@ -67,111 +88,118 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        (request.auth.token.email == "mahteusmachado@gmail.com" ||
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          request.auth.token.admin == true);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
     }
 
     function isValidEmail(email) {
-      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+      return email is string && email.size() <= 254 && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
     }
 
-    function isValidUser(data) {
-      return data.keys().hasAll(['uid', 'email', 'role']) &&
-             data.uid == request.auth.uid &&
-             isValidEmail(data.email) &&
-             data.role in ['admin', 'seller'] &&
-             (!('language' in data) || (data.language is string && data.language.size() <= 10));
+    function validStr(s, maxLen) {
+      return s is string && s.size() > 0 && s.size() <= maxLen;
     }
 
-    function isValidSale(data) {
-      return data.keys().hasAll(['sellerId', 'sellerName', 'amount', 'paymentMethod', 'source', 'timestamp']) &&
-             data.sellerId is string &&
-             data.sellerName is string &&
-             data.amount is number &&
-             data.paymentMethod in ['cash', 'credit', 'debit', 'pix'] &&
-             data.source in ['physical-store', 'whatsapp', 'instagram'] &&
-             data.timestamp is timestamp;
+    function validOptStr(s, maxLen) {
+      return s == null || (s is string && s.size() <= maxLen);
     }
 
-    function isValidGoal(data) {
-      return data.keys().hasAll(['title', 'target', 'current', 'status']) &&
-             data.title is string && data.title.size() > 0 &&
-             data.target is number && data.target > 0 &&
-             data.current is number &&
-             data.status in ['on-track', 'behind', 'completed'];
+    function validAmount(n) {
+      return n is number && n > 0 && n <= 999999.99;
     }
 
-    function isValidSeller(data) {
-      return data.keys().hasAll(['name', 'goal']) &&
-             data.name is string && data.name.size() > 0 &&
-             data.goal is number && data.goal >= 0 &&
-             (!('phone' in data) || data.phone is string) &&
-             (!('observations' in data) || data.observations is string) &&
-             (!('photoURL' in data) || data.photoURL is string) &&
-             (!('createdAt' in data) || data.createdAt is timestamp) &&
-             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    function validAmountOrZero(n) {
+      return n is number && n >= 0 && n <= 999999.99;
     }
 
-    function isValidCashMovement(data) {
-      return data.keys().hasAll(['type', 'amount', 'timestamp', 'userId']) &&
-             data.type in ['sangria', 'reforco'] &&
-             data.amount is number && data.amount > 0 &&
-             data.timestamp is timestamp &&
-             data.userId is string &&
-             (!('observation' in data) || data.observation is string) &&
-             (!('cashDetails' in data) || data.cashDetails is map);
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(d) {
+      return hasRequiredFields(['uid', 'email']) &&
+        validStr(d.uid, 128) &&
+        isValidEmail(d.email) &&
+        (!('role' in d) || d.role in ['admin', 'seller']) &&
+        (!('displayName' in d) || validOptStr(d.displayName, 100)) &&
+        (!('photoURL' in d) || validOptStr(d.photoURL, 500)) &&
+        (!('language' in d) || validOptStr(d.language, 10));
     }
 
-    function isValidCashSession(data) {
-      return data.keys().hasAll(['userId', 'openingTimestamp', 'openingAmount', 'status']) &&
-             data.userId is string &&
-             data.openingTimestamp is timestamp &&
-             data.openingAmount is number &&
-             data.status in ['open', 'closed'] &&
-             (!('userName' in data) || data.userName is string) &&
-             (!('openingDetails' in data) || data.openingDetails is map) &&
-             (!('closingTimestamp' in data) || data.closingTimestamp is timestamp) &&
-             (!('closingAmount' in data) || data.closingAmount is number) &&
-             (!('closingDetails' in data) || data.closingDetails is map) &&
-             (!('expectedAmount' in data) || data.expectedAmount is number) &&
-             (!('difference' in data) || data.difference is number) &&
-             (!('observations' in data) || data.observations is string);
+    function isValidSale(d) {
+      return hasRequiredFields(['sellerId', 'sellerName', 'amount', 'paymentMethod', 'source', 'timestamp']) &&
+        validStr(d.sellerId, 128) &&
+        validStr(d.sellerName, 100) &&
+        validAmount(d.amount) &&
+        d.paymentMethod in ['cash', 'credit', 'debit', 'pix', 'link', 'store-credit'] &&
+        d.source in ['physical-store', 'whatsapp', 'instagram', 'site'] &&
+        d.timestamp is timestamp;
+    }
+
+    function isValidGoal(d) {
+      return hasRequiredFields(['title', 'target', 'current']) &&
+        validStr(d.title, 200) &&
+        validAmount(d.target) &&
+        validAmountOrZero(d.current) &&
+        (!('status' in d) || d.status in ['on-track', 'behind', 'completed']);
+    }
+
+    function isValidSeller(d) {
+      return hasRequiredFields(['name', 'goal']) &&
+        validStr(d.name, 100) &&
+        validAmountOrZero(d.goal) &&
+        (!('phone' in d) || validOptStr(d.phone, 20)) &&
+        (!('observations' in d) || validOptStr(d.observations, 500)) &&
+        (!('photoURL' in d) || validOptStr(d.photoURL, 500)) &&
+        (!('createdAt' in d) || d.createdAt is timestamp);
+    }
+
+    function isValidCashMove(d) {
+      return hasRequiredFields(['type', 'amount', 'timestamp', 'userId']) &&
+        d.type in ['sangria', 'reforco'] &&
+        validAmount(d.amount) &&
+        d.timestamp is timestamp &&
+        validStr(d.userId, 128) &&
+        (!('observation' in d) || validOptStr(d.observation, 500)) &&
+        (!('userName' in d) || validOptStr(d.userName, 100));
+    }
+
+    function isValidSession(d) {
+      return hasRequiredFields(['userId', 'openingTimestamp', 'openingAmount', 'status']) &&
+        validStr(d.userId, 128) &&
+        d.openingTimestamp is timestamp &&
+        validAmountOrZero(d.openingAmount) &&
+        d.status in ['open', 'closed'] &&
+        (!('userName' in d) || validOptStr(d.userName, 100)) &&
+        (!('closingTimestamp' in d) || d.closingTimestamp is timestamp) &&
+        (!('closingAmount' in d) || validAmountOrZero(d.closingAmount)) &&
+        (!('expectedAmount' in d) || validAmountOrZero(d.expectedAmount)) &&
+        (!('difference' in d) || (d.difference is number && d.difference >= -999999.99 && d.difference <= 999999.99)) &&
+        (!('observations' in d) || validOptStr(d.observations, 500));
     }
 
     // ===============================================================
     // Rules
     // ===============================================================
 
-    match /cashMovements/{movementId} {
-      allow read: if isAdmin();
-      allow create: if isAuthenticated() && isValidCashMovement(request.resource.data) && 
-                    (request.resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if isAdmin();
-      allow delete: if false;
-    }
-
-    match /cashSessions/{sessionId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidCashSession(request.resource.data) && 
-                    (request.resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if isAuthenticated() && resource.data.status == 'open' && isValidCashSession(request.resource.data) && 
-                    (resource.data.userId == request.auth.uid || isAdmin());
-      allow delete: if false;
-    }
-
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
-                    (request.resource.data.role == 'seller' || isAdmin());
-      allow update: if isAuthenticated() && isValidUser(request.resource.data) && 
-                    ((isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin());
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'seller' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+      allow delete: if false;
     }
 
     match /sales/{saleId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidSale(request.resource.data) && 
-                    (request.resource.data.sellerId == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated() && resource.data.sellerId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() && isValidSale(request.resource.data) && (request.resource.data.sellerId == request.auth.uid || isAdmin());
       allow update: if isAdmin() && isValidSale(request.resource.data);
       allow delete: if false;
     }
@@ -187,7 +215,21 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /{path=**} {
+    match /cashMovements/{movementId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() && isValidCashMove(request.resource.data) && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /cashSessions/{sessionId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid || isAdmin();
+      allow create: if isAuthenticated() && isValidSession(request.resource.data) && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin()) && isValidSession(request.resource.data) && resource.data.status == 'open';
+      allow delete: if false;
+    }
+
+    match /{document=**} {
       allow read, write: if false;
     }
   }

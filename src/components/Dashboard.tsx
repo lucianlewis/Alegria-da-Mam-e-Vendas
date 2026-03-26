@@ -140,14 +140,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ sales, goals, sellers, onC
         <div className="flex gap-2">
           <button 
             onClick={onCashSessionClick}
-            className={cn(
-              "size-10 rounded-full flex items-center justify-center border transition-all active:scale-95 shadow-sm",
-              isSessionOpen 
-                ? "bg-white border-primary text-primary" 
-                : "bg-[var(--card-bg)] border-[var(--border-color)] text-slate-400"
-            )}
+            className="size-10 rounded-full flex items-center justify-center border border-[var(--border-color)] bg-[var(--card-bg)] transition-all active:scale-95"
           >
-            <Store size={20} />
+            <Store size={20} className="text-primary" />
           </button>
           <div className="size-10 rounded-full bg-[var(--card-bg)] flex items-center justify-center border border-[var(--border-color)]">
             <PieChart size={20} className="text-primary" />

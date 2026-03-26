@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, CheckCircle, Loader2, Banknote, Plus, Minus, AlertCircle, History as HistoryIcon, Lock, Unlock } from 'lucide-react';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
-import { collection, addDoc, serverTimestamp, updateDoc, doc, query, where, limit, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, updateDoc, doc, query, where, limit, getDocs, orderBy, Timestamp, setDoc } from 'firebase/firestore';
 import { CashSession as CashSessionInterface, Sale, CashMovement } from '../types';
 import { useLanguage, languages } from '../contexts/LanguageContext';
+import { v4 as uuidv4 } from 'uuid';
+import { cashSessionSchema } from '../schemas';
+import { sanitizeForDisplay } from '../utils/sanitize';
 
 interface CashSessionProps {
   currentSession: CashSessionInterface | null;
@@ -49,8 +52,10 @@ export const CashSession: React.FC<CashSessionProps> = ({
 
   useEffect(() => {
     const fetchHistory = async () => {
+      if (!auth.currentUser) return;
       const q = query(
         collection(db, 'cashSessions'),
+        where('userId', '==', auth.currentUser.uid),
         orderBy('openingTimestamp', 'desc'),
         limit(10)
       );
@@ -181,29 +186,41 @@ export const CashSession: React.FC<CashSessionProps> = ({
         const expectedCash = expectedAmounts['cash'] || 0;
         const diff = parseFloat(amount) - expectedCash;
         
-        await updateDoc(doc(db, 'cashSessions', currentSession.id!), {
+        const updateData = {
           closingTimestamp: Timestamp.fromDate(selectedDate),
           closingAmount: totalCash,
           closingDetails: details,
           expectedAmount: expectedCash,
           difference: diff,
           status: 'closed',
-          observations,
+          observations: sanitizeForDisplay(observations),
           transactionHash,
           previousSessionId: lastClosedSession?.id || null
-        });
+        };
+
+        // Partial validation for update
+        // (Zod schema is for full session, but updateDoc only takes partial)
+        // We can validate the full object if we want, but here we just update
+        
+        await updateDoc(doc(db, 'cashSessions', currentSession.id!), updateData);
       } else if (mode === 'opening' && !currentSession) {
         // Opening session
-        await addDoc(collection(db, 'cashSessions'), {
+        const sessionId = uuidv4();
+        const sessionData = {
           userId: auth.currentUser?.uid,
           userName: auth.currentUser?.displayName || t('unknown'),
           openingTimestamp: Timestamp.fromDate(selectedDate),
           openingAmount: parseFloat(amount),
           openingDetails: details,
           status: 'open',
-          observations,
+          observations: sanitizeForDisplay(observations),
           previousSessionId: lastClosedSession?.id || null
-        });
+        };
+
+        // Validate with Zod
+        cashSessionSchema.parse(sessionData);
+
+        await setDoc(doc(db, 'cashSessions', sessionId), sessionData);
       }
 
       onSuccess();

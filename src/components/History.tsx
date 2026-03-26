@@ -5,9 +5,10 @@ import { Sale, CashMovement, Goal, Seller } from '../types';
 import { format, isSameDay } from 'date-fns';
 import { enUS, ptBR, fr, es, de, hi, ru, ja, zhCN, ko, th } from 'date-fns/locale';
 import { useLanguage } from '../contexts/LanguageContext';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { jsPDF } from 'jspdf';
+import { sanitizeForDisplay } from '../utils/sanitize';
 import html2canvas from 'html2canvas';
 import { DailyReport } from './DailyReport';
 
@@ -83,7 +84,7 @@ export const History: React.FC<HistoryProps> = ({ sales, cashMovements, goals, s
       setDeletingId(id);
       await deleteDoc(doc(db, 'sales', id));
     } catch (error) {
-      console.error('Error deleting sale:', error);
+      handleFirestoreError(error, OperationType.DELETE, `sales/${id}`);
     } finally {
       setDeletingId(null);
     }

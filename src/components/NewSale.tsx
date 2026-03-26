@@ -3,10 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, HelpCircle, CheckCircle, Camera, Loader2, Sparkles, Store, MessageCircle, Instagram, Banknote, Plus, Minus, FileUp, Link as LinkIcon, Trash2, CreditCard, Smartphone, QrCode, Ticket } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { db, auth, handleFirestoreError, OperationType } from '../firebase';
-import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, writeBatch, doc } from 'firebase/firestore';
+import { collection, serverTimestamp, getDocs, query, orderBy, writeBatch, doc, setDoc, Timestamp } from 'firebase/firestore';
 import { analyzeReceipt, generateSalesMotivationImage, analyzeSpreadsheetData } from '../services/geminiService';
 import { PaymentMethod, SaleSource, Seller, SalePayment } from '../types';
 import { useLanguage, languages } from '../contexts/LanguageContext';
+import { v4 as uuidv4 } from 'uuid';
+import { saleSchema } from '../schemas';
+import { sanitizeForDisplay } from '../utils/sanitize';
 
 interface NewSaleProps {
   onBack: () => void;
@@ -149,20 +152,27 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
       const selectedSales = extractedSales.filter((_, i) => selectedSalesIndices.has(i));
       
       for (const sale of selectedSales) {
-        const saleRef = doc(collection(db, 'sales'));
+        const saleId = uuidv4();
+        const saleRef = doc(db, 'sales', saleId);
         
         // Create a proper timestamp from extracted date and time
         const [year, month, day] = sale.date.split('-').map(Number);
         const [hours, minutes] = sale.time.split(':').map(Number);
         const saleDate = new Date(year, month - 1, day, hours, minutes);
 
-        batch.set(saleRef, {
+        const saleData = {
           ...sale,
+          userId: auth.currentUser?.uid,
           sellerId: sellerId || auth.currentUser?.uid,
-          sellerName: sale.sellerName || sellerName,
-          timestamp: saleDate, // Use the retroactive date
+          sellerName: sanitizeForDisplay(sale.sellerName || sellerName),
+          timestamp: Timestamp.fromDate(saleDate), // Use the retroactive date
           createdAt: serverTimestamp(), // Keep track of when it was actually added
-        });
+        };
+
+        // Validate with Zod
+        saleSchema.parse(saleData);
+
+        batch.set(saleRef, saleData);
       }
       
       await batch.commit();
@@ -264,14 +274,16 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
       const [hours, minutes] = saleTime.split(':').map(Number);
       const customTimestamp = new Date(year, month - 1, day, hours, minutes);
 
+      const saleId = uuidv4();
       const saleData: any = {
+        userId: auth.currentUser?.uid,
         sellerId,
-        sellerName,
+        sellerName: sanitizeForDisplay(sellerName),
         amount: totalAmount,
         paymentMethod: salePayments[0].method,
         payments: salePayments,
         source,
-        timestamp: customTimestamp,
+        timestamp: Timestamp.fromDate(customTimestamp),
         createdAt: serverTimestamp(),
       };
 
@@ -280,7 +292,10 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
         saleData.cashDetails = cashP?.cashDetails;
       }
 
-      await addDoc(collection(db, 'sales'), saleData);
+      // Validate with Zod
+      saleSchema.parse(saleData);
+
+      await setDoc(doc(db, 'sales', saleId), saleData);
 
       // Generate motivational image for high sales
       if (totalAmount > 100) {
@@ -574,6 +589,7 @@ export const NewSale: React.FC<NewSaleProps> = ({ onBack, onSuccess }) => {
                       value={payment.amount}
                       onChange={(e) => updatePaymentAmount(payment.id, e.target.value)}
                       placeholder="0,00"
+                      maxLength={10}
                       className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-16 pl-10 pr-4 text-2xl font-black focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                     />
                   </div>

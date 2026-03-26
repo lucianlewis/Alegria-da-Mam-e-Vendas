@@ -7,6 +7,7 @@ import { calculateDailyGoal } from '../utils/goalUtils';
 import { format } from 'date-fns';
 import { ptBR, enUS } from 'date-fns/locale';
 import { jsPDF } from 'jspdf';
+import { sanitizeForDisplay } from '../utils/sanitize';
 import html2canvas from 'html2canvas';
 
 interface DailyReportProps {
@@ -344,7 +345,7 @@ export const DailyReport: React.FC<DailyReportProps> = ({ date, sales, cashMovem
                     {sale.paymentMethod === 'exchange-voucher' && <Ticket size={14} />}
                   </div>
                   <div>
-                    <p className="m3-body-medium" style={{ color: colors.text }}>{sale.sellerName}</p>
+                    <p className="m3-body-medium" style={{ color: colors.text }}>{sanitizeForDisplay(sale.sellerName)}</p>
                     <p className="m3-label-small tracking-wider" style={{ color: colors.muted }}>
                       {t(sale.paymentMethod)} • {t(sale.source)}
                     </p>
