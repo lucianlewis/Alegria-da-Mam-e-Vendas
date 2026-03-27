@@ -1,15 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Home, ReceiptText, History, Plus, TrendingDown, TrendingUp } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '../lib/utils';
 import { AnimatePresence } from 'motion/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { auth } from '../firebase';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 interface LayoutProps {
   children: React.ReactNode;
