@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, LogOut, Shield, Globe, Lock, FileText, Trash2, ChevronRight, Moon, Check, TrendingUp } from 'lucide-react';
+import { User, LogOut, Shield, Globe, Lock, FileText, Trash2, ChevronRight, Moon, Check, TrendingUp, Pencil } from 'lucide-react';
 import { auth, logout, db } from '../firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { useLanguage, languages, LanguageCode } from '../contexts/LanguageContext';
@@ -69,36 +69,35 @@ export const Profile: React.FC<ProfileProps> = ({
 
   return (
     <div className="p-4 space-y-8">
-      <header className="flex items-center justify-center py-2 relative">
+      <header className="flex items-center justify-between py-2 relative">
         <h2 className="m3-title-large">{t('adminProfile')}</h2>
+        <button 
+          onClick={onEditProfile}
+          className="size-10 rounded-full flex items-center justify-center border border-[var(--border-color)] bg-[var(--card-bg)] transition-all active:scale-95"
+        >
+          <Pencil size={20} className="text-primary" />
+        </button>
       </header>
 
-      <div className="flex flex-col items-center gap-6">
-        <div className="relative">
-          <div className="size-32 rounded-full bg-white/10 border-4 border-primary/20 overflow-hidden shadow-2xl">
+      <div className="flex items-center gap-6 bg-[var(--card-bg)] p-6 rounded-3xl border border-[var(--border-color)]">
+        <div className="relative shrink-0">
+          <div className="size-20 rounded-full bg-white/10 border-2 border-primary/20 overflow-hidden shadow-xl">
             <img 
               src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
               className="w-full h-full object-cover" 
               alt={t('profileImage')} 
             />
           </div>
-          <div className="absolute bottom-0 right-0 size-8 bg-primary rounded-full border-4 border-background-dark flex items-center justify-center">
-            <Shield size={14} className="text-white" />
+          <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full border-2 border-[var(--card-bg)] flex items-center justify-center">
+            <Shield size={10} className="text-white" />
           </div>
         </div>
 
-        <div className="text-center space-y-1">
-          <h3 className="m3-headline-medium tracking-tight">{user?.displayName || t('user')}</h3>
-          <p className="text-primary m3-label-large">@{user?.email?.split('@')[0]}</p>
-          <p className="text-slate-500 m3-body-small">{user?.email}</p>
+        <div className="flex-1 min-w-0 space-y-1">
+          <h3 className="m3-title-large tracking-tight truncate">{user?.displayName || t('user')}</h3>
+          <p className="text-primary m3-label-medium truncate">@{user?.email?.split('@')[0]}</p>
+          <p className="text-slate-500 m3-body-small truncate">{user?.email}</p>
         </div>
-
-        <button 
-          onClick={onEditProfile}
-          className="bg-primary text-white m3-label-large px-8 py-3 rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all"
-        >
-          {t('editProfile')}
-        </button>
       </div>
 
       {sections.map((section) => (

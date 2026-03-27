@@ -31,7 +31,7 @@ export const Entries: React.FC<EntriesProps> = ({ sales, sellers, onViewPerforma
 
   return (
     <div className="p-4 space-y-8">
-      <header className="flex items-center justify-center py-2 relative">
+      <header className="flex items-center justify-between py-2 relative">
         <h2 className="m3-title-large">{t('entries')}</h2>
       </header>
 
