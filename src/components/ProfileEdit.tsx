@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, Camera, Loader2, CheckCircle, User, Mail, Lock, Shield } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowLeft, Camera, Loader2, CheckCircle, User, Mail, Lock, Shield, Eye, EyeOff } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { updateProfile, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential, linkWithCredential } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -22,8 +22,25 @@ export const ProfileEdit: React.FC<ProfileEditProps> = ({ onBack }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasPassword = user?.providerData.some(p => p.providerId === 'password');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit for base64
+        setMessage({ type: 'error', text: t('fileTooLarge') || 'File too large (max 1MB)' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoURL(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -114,11 +131,26 @@ export const ProfileEdit: React.FC<ProfileEditProps> = ({ onBack }) => {
                 alt="Profile" 
               />
             </div>
-            <button className="absolute bottom-0 right-0 size-10 bg-primary rounded-full border-4 border-[var(--bg-color)] flex items-center justify-center text-white shadow-lg active:scale-95 transition-all">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 size-10 bg-primary rounded-full border-4 border-[var(--bg-color)] flex items-center justify-center text-white shadow-lg active:scale-95 transition-all"
+            >
               <Camera size={18} />
             </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              accept="image/*" 
+              className="hidden" 
+            />
           </div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('changePhoto')}</p>
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-primary transition-colors"
+          >
+            {t('changePhoto')}
+          </button>
         </div>
 
         <div className="space-y-6">
@@ -157,39 +189,65 @@ export const ProfileEdit: React.FC<ProfileEditProps> = ({ onBack }) => {
                 </span>
               )}
             </div>
+            
             <div className="space-y-3">
-              {hasPassword && (
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                  <input 
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder={t('currentPassword')}
-                    className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-12 pr-4 m3-body-medium focus:border-primary outline-none"
-                  />
-                </div>
+              {hasPassword && !showPasswordFields ? (
+                <button 
+                  onClick={() => setShowPasswordFields(true)}
+                  className="text-primary m3-label-large px-2 hover:underline transition-all"
+                >
+                  {t('changePassword') || 'Alterar senha'}
+                </button>
+              ) : (
+                <AnimatePresence>
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    className="space-y-3 overflow-hidden"
+                  >
+                    {hasPassword && (
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                        <input 
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          placeholder={t('currentPassword')}
+                          className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-12 pr-4 m3-body-medium focus:border-primary outline-none"
+                        />
+                      </div>
+                    )}
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                      <input 
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder={hasPassword ? t('newPassword') : t('createPassword')}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-12 pr-4 m3-body-medium focus:border-primary outline-none"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                      <input 
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder={t('confirmPassword')}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-12 pr-4 m3-body-medium focus:border-primary outline-none"
+                      />
+                    </div>
+                    {hasPassword && (
+                      <button 
+                        onClick={() => setShowPasswordFields(false)}
+                        className="text-slate-500 m3-label-small px-2 hover:text-primary transition-colors"
+                      >
+                        {t('cancel')}
+                      </button>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               )}
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                <input 
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder={hasPassword ? t('newPassword') : t('createPassword')}
-                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-12 pr-4 m3-body-medium focus:border-primary outline-none"
-                />
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                <input 
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={t('confirmPassword')}
-                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl h-14 pl-12 pr-4 m3-body-medium focus:border-primary outline-none"
-                />
-              </div>
             </div>
           </div>
         </div>

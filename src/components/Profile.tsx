@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, LogOut, Shield, Globe, Lock, FileText, Trash2, ChevronRight, Moon, Check, TrendingUp, Pencil } from 'lucide-react';
 import { auth, logout, db } from '../firebase';
+import { APP_VERSION } from '../constants';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { useLanguage, languages, LanguageCode } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -203,6 +204,12 @@ export const Profile: React.FC<ProfileProps> = ({
           <LogOut size={20} />
           <span className="m3-label-large">{t('logout')}</span>
         </button>
+      </div>
+
+      <div className="text-center pb-4">
+        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">
+          Versão {APP_VERSION}
+        </p>
       </div>
     </div>
   );
