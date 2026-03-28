@@ -21,10 +21,6 @@ import { CashMovement } from './components/CashMovement';
 import { PaymentMethodDetail } from './components/PaymentMethodDetail';
 import { CashSession } from './components/CashSession';
 import { useLanguage } from './contexts/LanguageContext';
-import { DashboardSkeleton } from './components/DashboardSkeleton';
-import { EntriesSkeleton } from './components/EntriesSkeleton';
-import { HistorySkeleton } from './components/HistorySkeleton';
-import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { Sale, Goal, Seller, CashMovementType, CashMovement as CashMovementInterface, CashSession as CashSessionInterface } from './types';
 import { Loader2 } from 'lucide-react';
 
@@ -153,7 +149,7 @@ export default function App() {
 
   const isInitialLoading = loading || salesLoading || sellersLoading || goalsLoading || cashMovementsLoading || sessionsLoading;
 
-  if (loading) {
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-[var(--bg-color)] flex items-center justify-center transition-colors duration-300">
         <div className="flex flex-col items-center gap-4">
@@ -168,35 +164,6 @@ export default function App() {
 
   if (!user) {
     return <Auth />;
-  }
-
-  const renderSkeleton = () => {
-    switch (activeTab) {
-      case 'home':
-        return <DashboardSkeleton />;
-      case 'entries':
-        return <EntriesSkeleton />;
-      case 'history':
-        return <HistorySkeleton />;
-      case 'profile':
-        return <ProfileSkeleton />;
-      default:
-        return <DashboardSkeleton />;
-    }
-  };
-
-  if (isInitialLoading) {
-    return (
-      <Layout 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
-        onPlusClick={() => {}}
-        onSangriaClick={() => {}}
-        onReforcoClick={() => {}}
-      >
-        {renderSkeleton()}
-      </Layout>
-    );
   }
 
   if (showNewSale) {
